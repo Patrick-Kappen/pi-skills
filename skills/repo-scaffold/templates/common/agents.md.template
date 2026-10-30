@@ -1,0 +1,25 @@
+# AGENTS.md
+
+@DESCRIPTION@
+
+## Agent files stay out of git
+
+- This file (`AGENTS.md`) and every other agent file stay untracked: `.AGENTS.md`, `CLAUDE.md`,
+  `CLAUDE.local.md`, `GEMINI.md`, `.claude/`, `.cursor/`, `.cursorrules`, `.windsurfrules`,
+  `.clinerules`, `.github/copilot-instructions.md`, `.pi/`.
+- The owner's global gitignore ignores them, and the repository's `.gitignore` does too, for other
+  machines and CI.
+- Never `git add -f` them. Never add an exception (`!AGENTS.md`) to `.gitignore`, and never remove
+  them from it. Never mention them in the README or in commit messages as files of the project.
+- If one shows up in `git status` or in a diff, stop and report it; do not commit it.
+
+## Rules
+
+- Work on a branch and open a PR; never merge, and never release. The owner decides.
+- Commits and PR titles are Conventional Commits.
+- Do not edit `CHANGELOG.md`, versions or `.release-please-manifest.json`; release-please does that.
+- Do not weaken a check to make it pass.
+
+## Checks
+
+- `devenv shell -- check`

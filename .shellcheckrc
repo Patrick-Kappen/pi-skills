@@ -1,0 +1,3 @@
+# Follow `source "$(dirname ...)/lib.sh"` in the skill scripts.
+external-sources=true
+source-path=SCRIPTDIR
