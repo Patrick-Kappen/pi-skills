@@ -10,6 +10,7 @@ in the repositories you list. It works like `repo-mcp` in
 | Skill | What it does |
 |---|---|
 | [`repo-scaffold`](skills/repo-scaffold/SKILL.md) | Scaffolds a new repository: devenv, hooks, checks, flake, GitHub CI/CD and releases. Prompt: `/repo-scaffold`. |
+| [`git`](skills/git/SKILL.md) | How to work with git and GitHub: worktrees in `~/.worktrees/<repo>/<topic>`, commits, PRs, CI, conflicts, stacked PRs, cleanup. Used by the agent, and by the helper of [pi-git](https://github.com/Patrick-Kappen/pi-git). |
 
 ## Use with Home Manager
 
@@ -32,6 +33,7 @@ in the repositories you list. It works like `repo-mcp` in
     enable = true;
     skills = {
       repo-scaffold.repos = [ "*" ];                        # everywhere
+      git.repos = [ "*" ];
       # terraform.repos = [ "my-org/infra" "my-org/*" ];   # in these repositories
       # notes.repos = [ "~/private/notes" ];               # in this directory
       # my-own = { path = ./skills/my-own; repos = [ "*" ]; };   # a skill from elsewhere
