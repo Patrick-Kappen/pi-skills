@@ -62,7 +62,7 @@ repo-scaffold plan
   release      ${release}
   files        devenv.nix, devenv.yaml, nix/devenv/${language}.nix, .githooks/, .github/workflows/ci.yml,
                $([[ ${release} == yes ]] && echo "release.yml, release-please config, CHANGELOG.md, ")dependabot.yml,
-               $([[ ${flake} == yes ]] && echo "flake.nix, ")README.md, CONTRIBUTING.md, SECURITY.md, AGENTS.md (local)$([[ ${license} != none ]] && echo ", LICENSE")
+               $([[ ${flake} == yes ]] && echo "flake.nix, ")README.md, CONTRIBUTING.md, SECURITY.md$([[ ${license} != none ]] && echo ", LICENSE")
 PLAN
 [[ ${dry_run} -eq 1 ]] && exit 0
 
@@ -88,8 +88,6 @@ cp "${templates}/common/gitignore" .gitignore
 cp "${templates}/common/_typos.toml" _typos.toml
 cp "${templates}/common/markdownlint-cli2.jsonc" .markdownlint-cli2.jsonc
 cp "${templates}/common/README.md" "${templates}/common/CONTRIBUTING.md" "${templates}/common/SECURITY.md" .
-# Named agents.md.template: AGENTS.md is gitignored everywhere, also in the repository of this skill.
-cp "${templates}/common/agents.md.template" AGENTS.md
 [[ ${release} == yes ]] && cat "${templates}/common/README.release.fragment" >>README.md
 [[ ${license} != none ]] && cp "${templates}/common/LICENSE-${license}" LICENSE
 

@@ -11,7 +11,6 @@
 | `.github/dependabot.yml` | Weekly updates of GitHub Actions and the language's packages | `templates/github/` |
 | `release-please-config.json`, `.release-please-manifest.json`, `CHANGELOG.md` | Release notes and versions | `templates/github/` |
 | `README.md`, `CONTRIBUTING.md`, `SECURITY.md` | Documentation | `templates/common/` |
-| `AGENTS.md` | Agent rules, always with the rule that agent files stay out of git; it stays local itself (global and repository `.gitignore`) | `templates/common/` |
 | `LICENSE` | Chosen license | `templates/common/` |
 | `.gitignore` | Ignores, including every agent file (`AGENTS.md`, `CLAUDE.md`, `.claude/`, `.cursor/`, `.pi/`, ...) | `templates/common/` |
 | `_typos.toml`, `.markdownlint-cli2.jsonc` | Linter configuration | `templates/common/` |

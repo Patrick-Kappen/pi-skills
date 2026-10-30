@@ -12,7 +12,7 @@ result-*
 # tests
 coverage/
 
-# Agent files: local to the owner, never part of the project (see AGENTS.md)
+# Agent files: local to the owner, never part of the project
 AGENTS.md
 .AGENTS.md
 CLAUDE.md

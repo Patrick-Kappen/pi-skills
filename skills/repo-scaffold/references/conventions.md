@@ -29,7 +29,7 @@ owner's local files:
 
 - They are never tracked, never force-added, and never get a `.gitignore` exception.
 - They are not mentioned in the README as files of the project.
-- Every generated `AGENTS.md` repeats this rule.
+- The scaffold creates none of them; the `.gitignore` ignores them all.
 
 ## Documentation
 

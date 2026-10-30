@@ -11,6 +11,6 @@
    commits that belong on `main` directly.
 2. If a hook fails, fix the cause, run `git reset --soft` back to the root if needed, and run the
    script again.
-3. `AGENTS.md` and all other agent files (`CLAUDE.md`, `.claude/`, `.cursor/`, `.pi/`, ...) stay
-   untracked. They are in the owner's global gitignore and in the repository's `.gitignore`, and the
-   script stops if one is tracked. Never force-add them, and never add a `.gitignore` exception.
+3. Agent files (`AGENTS.md`, `CLAUDE.md`, `.claude/`, `.cursor/`, `.pi/`, ...) are not created
+   and stay untracked. They are in the owner's global gitignore and in the repository's `.gitignore`,
+   and the script stops if one is tracked. Never force-add them, and never add a `.gitignore` exception.

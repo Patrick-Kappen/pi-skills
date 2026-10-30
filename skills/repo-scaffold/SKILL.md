@@ -87,5 +87,5 @@ Change templates there, not in the generated repos.
 - Ask before anything that is visible to others: creating the GitHub repo, pushing, changing
   visibility.
 - Do not commit secrets. Do not weaken a check to make it pass; fix the cause.
-- Agent files (`AGENTS.md`, `CLAUDE.md`, `.claude/`, `.cursor/`, `.pi/`, ...) stay out of git. The
-  generated `AGENTS.md` always says so; see `references/conventions.md`.
+- Agent files (`AGENTS.md`, `CLAUDE.md`, `.claude/`, `.cursor/`, `.pi/`, ...) stay out of git, and the
+  scaffold never creates them; see `references/conventions.md`.
