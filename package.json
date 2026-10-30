@@ -4,7 +4,7 @@
   "private": true,
   "description": "pi agent skills in a Nix flake, loaded per repository by the repo-skills extension",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Patrick-Kappen/pi-skills"

@@ -32,6 +32,7 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Pi extension that loads skills only in the repositories you list";
     homepage = "https://github.com/Patrick-Kappen/pi-skills";
+    license = lib.licenses.mit;
     platforms = lib.platforms.all;
   };
 }
