@@ -42,7 +42,13 @@
       };
 
       # treefmt, so `nix fmt -- --fail-on-change FILES` works (the owner's global pre-commit hook uses it).
-      formatter = forAllSystems (pkgs: pkgs.nixfmt-tree);
+      formatter = forAllSystems (
+        pkgs:
+        pkgs.nixfmt-tree.override {
+          # Templates of skills, with @PLACEHOLDERS@: not Nix code of this repository.
+          settings.global.excludes = [ "skills/*/templates/**" ];
+        }
+      );
 
       checks = forAllSystems (
         pkgs:
