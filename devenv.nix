@@ -68,7 +68,8 @@ in
         # skills/*/templates/ holds templates with @PLACEHOLDERS@, not Nix code of this repository.
         nixfmt --check $(git ls-files '*.nix' ':!:skills/*/templates/**')
         statix check --ignore 'skills/*/templates/**' .
-        deadnix --fail --exclude $(git ls-files 'skills/*/templates/**.nix') -- .
+        mapfile -t nix_templates < <(git ls-files 'skills/*/templates/**.nix')
+        deadnix --fail ''${nix_templates[@]:+--exclude "''${nix_templates[@]}"} -- .
         if [ -d .github/workflows ]; then
           actionlint
           zizmor --offline --min-severity=low .github/workflows
