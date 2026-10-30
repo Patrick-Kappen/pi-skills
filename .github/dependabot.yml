@@ -21,5 +21,9 @@ updates:
     groups:
       dependencies:
         patterns: ["*"]
+    ignore:
+      # @types/node follows the Node major of the dev environment (nix/devenv); bump both together.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     cooldown:
       default-days: 3
