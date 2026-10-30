@@ -1,0 +1,9 @@
+
+## CI and releases
+
+- `ci.yml` runs `devenv test` on every PR and on `main`, and checks the PR title and commit messages.
+- `release.yml` runs [release-please](https://github.com/googleapis/release-please) on `main`:
+  1. It keeps one release PR that collects the merged PRs, with the version bump and the notes in
+     [`CHANGELOG.md`](CHANGELOG.md).
+  2. Merging that PR tags `vX.Y.Z`, publishes the release, and moves the `latest` branch to it.
+- Squash-merge PRs: the PR title becomes the commit on `main`.

@@ -65,9 +65,11 @@ in
         lint-language
         typos
         markdownlint-cli2 "**/*.md"
-        nixfmt --check $(git ls-files '*.nix')
-        statix check .
-        deadnix --fail .
+        # skills/*/templates/ holds templates with @PLACEHOLDERS@, not Nix code of this repository.
+        nixfmt --check $(git ls-files '*.nix' ':!:skills/*/templates/**')
+        statix check --ignore 'skills/*/templates/**' .
+        mapfile -t nix_templates < <(git ls-files 'skills/*/templates/**.nix')
+        deadnix --fail ''${nix_templates[@]:+--exclude "''${nix_templates[@]}"} -- .
         if [ -d .github/workflows ]; then
           actionlint
           zizmor --offline --min-severity=low .github/workflows
@@ -125,6 +127,8 @@ in
         "\\.lock$"
         "^package-lock\\.json$"
         "^CHANGELOG\\.md$"
+        # Templates of skills, with @PLACEHOLDERS@; the skill fills them in for another repository.
+        "^skills/[^/]+/templates/"
       ];
       hooks = {
         check-added-large-files.enable = true;
@@ -159,7 +163,10 @@ in
         actionlint.enable = true;
         shellcheck.enable = true;
         nixfmt.enable = true;
-        statix.enable = true;
+        statix = {
+          enable = true;
+          settings.ignore = [ "skills/*/templates/**" ];
+        };
         deadnix = {
           enable = true;
           settings.noLambdaPatternNames = false;
