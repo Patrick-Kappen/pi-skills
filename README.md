@@ -1,6 +1,82 @@
 # pi-skills
 
-pi agent skills in a Nix flake, loaded per repository by the repo-skills extension
+pi agent skills in a Nix flake, loaded per repository by the repo-skills extension.
+
+pi loads every skill in `~/.pi/agent/skills` in every repository. This flake keeps the skills out of
+that directory. The [`repo-skills`](extensions/repo-skills/README.md) extension loads a skill only
+in the repositories you list. It works like `repo-mcp` in
+[pi-mcp-servers](https://github.com/Patrick-Kappen/pi-mcp-servers).
+
+| Skill | What it does |
+|---|---|
+| [`repo-scaffold`](skills/repo-scaffold/SKILL.md) | Scaffolds a new repository: devenv, hooks, checks, flake, GitHub CI/CD and releases. Prompt: `/repo-scaffold`. |
+
+## Use with Home Manager
+
+```nix
+{
+  inputs.pi-skills = {
+    url = "github:Patrick-Kappen/pi-skills/v1.0.0"; # a release tag, or the `latest` branch
+    inputs.nixpkgs.follows = "nixpkgs";
+    inputs.home-manager.follows = "home-manager";
+  };
+}
+```
+
+```nix
+{ inputs, ... }:
+{
+  imports = [ inputs.pi-skills.homeModules.default ];
+
+  programs.pi-skills = {
+    enable = true;
+    skills = {
+      repo-scaffold.repos = [ "*" ];                        # everywhere
+      # terraform.repos = [ "my-org/infra" "my-org/*" ];   # in these repositories
+      # notes.repos = [ "~/private/notes" ];               # in this directory
+      # my-own = { path = ./skills/my-own; repos = [ "*" ]; };   # a skill from elsewhere
+    };
+  };
+}
+```
+
+The module installs the extension in `~/.pi/agent/extensions/repo-skills` and writes
+`~/.pi/agent/repo-skills.json`. A skill that is not listed loads nowhere.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `skills.<name>.repos` | (required) | Where the skill loads: `*`, `owner/repo`, `host/owner/repo`, `owner/*`, or a path such as `~/src/project`. See the [extension README](extensions/repo-skills/README.md#repos-entries). |
+| `skills.<name>.path` | the skill `<name>` of this flake | Directory with the skill's `SKILL.md`, for a skill from elsewhere. |
+| `package` | `packages.<system>.repo-skills` | The extension. |
+| `skillsPackage` | `packages.<system>.skills` | The skills of this flake. |
+| `agentDir` | `.pi/agent` | pi's agent directory relative to home. |
+
+In pi, `/repo-skills` shows which skills match the current repository. After changing the
+configuration, run `/reload` in pi.
+
+When you move a skill here, remove the copy from `~/.pi/agent/skills` (and its prompt from
+`~/.pi/agent/prompts`). Otherwise pi loads both.
+
+## Adding a skill
+
+1. Add `skills/<name>/SKILL.md`, with `name: <name>` in the front matter, plus any files it needs.
+2. Prompt templates that belong to the skill go into `skills/<name>/prompts/`. They load together
+   with the skill.
+3. Refer to the skill's own files by paths relative to its `SKILL.md`. The skill runs from the
+   read-only Nix store, not from `~/.pi/agent/skills`.
+4. Files in `skills/*/templates/` are templates for other repositories. The linters of this
+   repository skip them.
+
+## Layout
+
+| Path | Contains |
+|---|---|
+| `skills/<name>/` | The skills |
+| `extensions/repo-skills/` | The extension, with unit tests |
+| `test/integration/` | Loads the extension and a skill with pi's own loader, in a repository and a worktree |
+| `nix/package.nix`, `nix/skills.nix` | The packages `repo-skills` and `skills` |
+| `nix/home-manager.nix` | The Home Manager module |
+| `nix/checks.nix`, `test/nix/` | Flake checks: packages, module, and the generated files with node |
 
 ## Development
 
