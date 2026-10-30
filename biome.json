@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!package-lock.json", "!CHANGELOG.md", "!.release-please-manifest.json"]
+    "includes": ["**", "!package-lock.json", "!CHANGELOG.md", "!.release-please-manifest.json", "!skills/*/templates"]
   },
   "formatter": {
     "indentStyle": "space",
