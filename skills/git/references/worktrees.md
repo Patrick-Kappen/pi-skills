@@ -29,7 +29,12 @@ cd ~/.worktrees/<repo>/<topic>
   sets up tracking when `origin/<branch>` exists). For a PR: `gh pr checkout <n>` inside a new
   worktree made with `--detach`, or add the worktree on `origin/<branch>` and `git switch -c`.
 - A stacked change (needs an unmerged branch): start from that branch instead of the default, and
-  open the PR against it (see `pull-requests.md`).
+  open the PR against it (see `pull-requests.md`). Use `origin/<branch>` after the fetch when it is
+  on GitHub; when it is only in another worktree, start from the local branch `<branch>`, and push
+  it (or open its PR) before the PR of the stacked change. With pi-git: `git_start` with `base`
+  does both.
+- Never start from a stale ref: always fetch first. A worktree you come back to may be behind its
+  base; rebase it (`rebasing.md`) before more work. `git_start` says when it is behind.
 
 ## Prepare
 

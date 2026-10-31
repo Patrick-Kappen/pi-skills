@@ -42,7 +42,8 @@ gh pr create --base <default or base branch> --head <branch> --title "<title>" -
 
 A change that needs another unmerged branch:
 
-1. Start the worktree from that branch: `git worktree add -b <type>/<topic> ~/.worktrees/<repo>/<topic> origin/<base branch>`.
+1. Start the worktree from that branch, after a fetch: `git worktree add -b <type>/<topic> ~/.worktrees/<repo>/<topic> origin/<base branch>`,
+   or from the local branch when the base is only in another worktree; push the base first then.
 2. Open the PR with `--base <base branch>`, and say at the top of the body: "Stacked on #<n>;
    merge that first."
 3. When the base PR is merged, GitHub retargets this PR to the default branch. With squash merges, the

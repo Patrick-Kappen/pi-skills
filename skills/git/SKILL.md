@@ -2,7 +2,7 @@
 name: git
 description: How to work with git and GitHub - worktrees, branches, commits, pushes, pull requests, CI, conflicts, stacked PRs, rebasing after squash merges, and cleanup after a merge. Use for every git or GitHub task - starting a change, committing, pushing, opening or updating a PR, fixing CI or a conflict, and cleaning up.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # git
