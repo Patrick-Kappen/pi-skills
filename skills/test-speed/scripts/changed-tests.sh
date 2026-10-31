@@ -34,6 +34,11 @@ die() {
   exit 2
 }
 
+# Keep output stable across host locales, with paths ordered case-insensitively.
+sort_unique() {
+  LC_ALL=C sort -f | LC_ALL=C uniq
+}
+
 root="."
 base=""
 strict=0
@@ -57,7 +62,7 @@ done
 root="$(git -C "${root}" rev-parse --show-toplevel 2>/dev/null)" || die "${root} is not in a git repository"
 
 mapfile -t tests < <(git -C "${root}" ls-files --cached --others --exclude-standard |
-  grep -E "${TEST_PATTERN}" | while IFS= read -r t; do [[ -f "${root}/${t}" ]] && printf '%s\n' "${t}"; done | sort -u)
+  grep -E "${TEST_PATTERN}" | while IFS= read -r t; do [[ -f "${root}/${t}" ]] && printf '%s\n' "${t}"; done | sort_unique)
 
 default_base() {
   local ref
@@ -78,7 +83,7 @@ changed_files() {
     fi
     git -C "${root}" diff --name-only HEAD 2>/dev/null || git -C "${root}" diff --name-only --cached
     git -C "${root}" ls-files --others --exclude-standard
-  } | sed '/^$/d' | sort -u
+  } | sed '/^$/d' | sort_unique
 }
 
 # The test files that cover one changed file, one per line.
@@ -117,7 +122,7 @@ covering() {
 
 finish() {
   local -a selected=()
-  mapfile -t selected < <(printf '%s\n' "$@" | sed '/^$/d' | sort -u)
+  mapfile -t selected < <(printf '%s\n' "$@" | sed '/^$/d' | sort_unique)
   if [[ -n ${run} ]]; then
     if [[ ${#selected[@]} -eq 0 ]]; then
       echo "changed-tests: no test files cover the changes" >&2
@@ -164,7 +169,7 @@ done
 
 if [[ ${strict} -eq 1 && ${#uncovered[@]} -gt 0 ]]; then
   printf 'changed-tests: no test covers %s\n' "${uncovered[@]}" >&2
-  [[ ${#selected[@]} -gt 0 ]] && printf '%s\n' "${selected[@]}" | sort -u
+  [[ ${#selected[@]} -gt 0 ]] && printf '%s\n' "${selected[@]}" | sort_unique
   exit 3
 fi
 if [[ ${#selected[@]} -eq 0 && -z ${run} ]]; then
