@@ -13,6 +13,7 @@ in the repositories you list. It works like `repo-mcp` in
 | [`git`](skills/git/SKILL.md) | How to work with git and GitHub: worktrees in `~/.worktrees/<repo>/<topic>`, commits, PRs, CI, conflicts, stacked PRs, the same change in several repositories, cleanup, and the pi-git tools. Used by the agent, and by the helper of [pi-git](https://github.com/Patrick-Kappen/pi-git). |
 | [`skill-create`](skills/skill-create/SKILL.md) | Creates a new skill (or imports one) in this repository: intake, design, a scaffold script, the repository rules and best practices, checks, and a PR. Prompt: `/skill-create`. |
 | [`skill-review`](skills/skill-review/SKILL.md) | Improves a skill from evidence: finds the sessions that used it, lets a cheap model (`gpt-6-luna`) analyse them, and turns the report into approved changes and a PR. Lessons that hold beyond the skill go into a learnings log, then into the skill rules of `skill-create` (from a second skill on), or into [pi-rules](https://github.com/Patrick-Kappen/pi-rules). Prompt: `/skill-review`. |
+| [`test-speed`](skills/test-speed/SKILL.md) | Makes the tests of a repository fast and keeps new ones fast: times every test file, finds repeated process starts, adds a parallel runner, a `test-changed` run from the git diff, and the recipes `just test`, `just test-changed` and `just test-serial` on top of devenv. Scripts for timing, comparing and setup; templates for Pester. Prompt: `/test-speed`. |
 
 ## Use with Home Manager
 

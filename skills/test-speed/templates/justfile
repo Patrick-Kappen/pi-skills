@@ -1,0 +1,14 @@
+# Test recipes (test-speed skill). `just test-changed <files>` is also the recipe that run_tests calls.
+set positional-arguments
+
+# Run the test files in parallel, slowest first; optional paths
+test *paths:
+    @@TEST@
+
+# Run only the tests that cover these files, or every change against the base branch
+test-changed *files:
+    @@TEST_CHANGED@
+
+# Run the tests one after another (to debug a test that fails only in parallel); optional paths
+test-serial *paths:
+    @@TEST_SERIAL@
