@@ -29,6 +29,7 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "pi agent skills, loaded per repository by the repo-skills extension";
     homepage = "https://github.com/Patrick-Kappen/pi-skills";
+    license = lib.licenses.mit;
     platforms = lib.platforms.all;
   };
 }
