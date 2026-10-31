@@ -13,6 +13,41 @@ let
     lib.filterAttrs (_: type: type == "directory") (builtins.readDir ../skills)
   );
 
+  triggerOptions = {
+    paths = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "*.nix"
+        "infra/**"
+      ];
+      description = ''
+        Globs of files that load the skill: before the agent edits or writes a matching file, and
+        when it reads one. Relative globs start at the repository root (or the working directory
+        outside git); a glob without `/` matches the file name anywhere; `/` and `~/` globs are
+        absolute.
+      '';
+    };
+    extensions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [ ".tf" ];
+      description = "File extensions that load the skill, like `paths`.";
+    };
+    errors = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "command not found"
+        "error while loading shared libraries"
+      ];
+      description = ''
+        Regular expressions (case-insensitive). When the output of a tool such as bash matches one,
+        the skill is added to that tool result.
+      '';
+    };
+  };
+
   skillModule =
     { name, ... }:
     {
@@ -50,39 +85,16 @@ let
               Worktrees elsewhere match through the location of their main checkout.
           '';
         };
-        triggers = {
-          paths = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            example = [
-              "*.nix"
-              "infra/**"
-            ];
-            description = ''
-              Globs of files that load the skill: before the agent edits or writes a matching file, and
-              when it reads one. Relative globs start at the repository root (or the working directory
-              outside git); a glob without `/` matches the file name anywhere; `/` and `~/` globs are
-              absolute.
-            '';
-          };
-          extensions = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            example = [ ".tf" ];
-            description = "File extensions that load the skill, like `paths`.";
-          };
-          errors = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            example = [
-              "command not found"
-              "error while loading shared libraries"
-            ];
-            description = ''
-              Regular expressions (case-insensitive). When the output of a tool such as bash matches one,
-              the skill is added to that tool result.
-            '';
-          };
+        triggers = triggerOptions;
+        subskills = lib.mkOption {
+          type = lib.types.attrsOf (lib.types.submodule { options.triggers = triggerOptions; });
+          default = { };
+          example = lib.literalExpression ''{ storage.triggers.paths = [ "infra/storage/**" ]; }'';
+          description = ''
+            Triggers of the sub-skills, by folder name. A sub-skill is a folder inside the skill with
+            its own SKILL.md (for example `skills/storage/SKILL.md`). pi does not list sub-skills to
+            the model; repo-skills loads them when a prompt scores high or a trigger matches.
+          '';
         };
       };
     };
@@ -208,7 +220,7 @@ in
           skills = lib.mapAttrs (_: skill: {
             # A Nix path goes to the store; a string stays as it is.
             path = "${skill.path}";
-            inherit (skill) repos triggers;
+            inherit (skill) repos triggers subskills;
           }) (lib.filterAttrs (_: skill: skill.enable) cfg.skills);
         }
         // lib.optionalAttrs (cfg.semantic != null) { inherit (cfg) semantic; }

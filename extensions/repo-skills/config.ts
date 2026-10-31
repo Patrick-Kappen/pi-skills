@@ -21,6 +21,8 @@ export interface SkillEntry {
   path: string;
   repos: string[];
   triggers: Triggers;
+  /** Sub-skills (folders with their own SKILL.md inside the skill), by folder name. */
+  subskills: Record<string, { triggers: Triggers }>;
 }
 
 /** The embedding and rerank server that scores prompts against the skills. */
@@ -203,7 +205,25 @@ function parseSkill(
     path: expandHome(dir, home),
     repos: repos === undefined ? ["*"] : repos.map((repo) => repo.trim()),
     triggers: parseTriggers(value.triggers, `${path}: skill "${name}"`, errors),
+    subskills: parseSubskills(value.subskills, `${path}: skill "${name}"`, errors),
   };
+}
+
+function parseSubskills(raw: unknown, where: string, errors: string[]): SkillEntry["subskills"] {
+  if (raw === undefined) return {};
+  if (!isRecord(raw)) {
+    errors.push(`${where}: "subskills" must be an object`);
+    return {};
+  }
+  const subskills: SkillEntry["subskills"] = {};
+  for (const [name, value] of Object.entries(raw)) {
+    if (!isRecord(value)) {
+      errors.push(`${where}: subskill "${name}" must be an object`);
+      continue;
+    }
+    subskills[name] = { triggers: parseTriggers(value.triggers, `${where}: subskill "${name}"`, errors) };
+  }
+  return subskills;
 }
 
 export function parseConfig(raw: unknown, path: string, home: string = homedir()): LoadedConfig {

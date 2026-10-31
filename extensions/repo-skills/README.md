@@ -47,6 +47,8 @@ skill loads everywhere.
 | `extensions` | File extensions; `tf` and `.tf` are the same. |
 | `errors` | Regular expressions, case-insensitive, matched against tool output. |
 
+`subskills.<folder>.triggers` has the same keys, for a [sub-skill](#sub-skills).
+
 ### `semantic`
 
 | Key | Default | Meaning |
@@ -150,6 +152,40 @@ A skill counts as in context when a skill block of it (from `/skill:name` or thi
 read of its `SKILL.md` is in the part of the session the model sees. After a compaction summarized it
 away, it loads again. While it is in context, the extension does not load it again, and refuses a
 second read of its `SKILL.md`.
+
+### Sub-skills
+
+A folder inside a skill with its own `SKILL.md` is a sub-skill. pi treats a folder with a
+`SKILL.md` as one skill and does not look inside it, so it never lists sub-skills to the model and
+they have no `/skill:` command. The extension finds them, scores them with the other skills, and
+loads them by score or trigger; a sub-skill marked `disable-model-invocation` still loads, because
+the model cannot pick it anyway.
+
+```text
+bicep/
+├── SKILL.md                  # main skill: rules, practice, basics, gotchas; the model can pick it
+├── references/gotchas.md     # a part of the main skill
+└── skills/
+    ├── storage/SKILL.md      # sub-skill bicep/storage
+    └── network/SKILL.md      # sub-skill bicep/network
+```
+
+- A sub-skill is named `<main>/<folder>` (`bicep/storage`), also in its skill block.
+- Its block has one more line, naming the main skill and the path of its `SKILL.md`, so the agent
+  reads the shared rules when they are not in context yet. The main skill's content is not added.
+- The main skill's parts leave out the sub-skill folders; each sub-skill has its own parts.
+- Sub-skills inside sub-skills belong to the main skill too.
+- Triggers are set per sub-skill, by folder name:
+
+```json
+"bicep": {
+  "path": "~/skills/bicep",
+  "subskills": { "storage": { "triggers": { "paths": ["infra/storage/**"] } } }
+}
+```
+
+A sub-skill in the config without a folder is reported when the session starts. See the `set`
+structure in skill-create's `references/structure.md` for how to split a skill.
 
 ### Descriptions
 

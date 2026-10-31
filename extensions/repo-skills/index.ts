@@ -1,6 +1,6 @@
 import { existsSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -8,11 +8,11 @@ import type {
   InputEventResult,
   ToolResultEvent,
 } from "@earendil-works/pi-coding-agent";
-import { configPath, type LoadedConfig, loadConfig, type SkillEntry } from "./config.ts";
+import { configPath, type LoadedConfig, loadConfig, type SkillEntry, type Triggers } from "./config.ts";
 import { firstMatch, type MatchContext, normalizeRemote } from "./match.ts";
 import { findRepo } from "./repo.ts";
 import { type Fetch, type Ranking, SemanticRanker } from "./semantic.ts";
-import { type LoadedSkill, readSkill, type SkillPart, saysWhen, skillBlock } from "./skills.ts";
+import { type LoadedSkill, readSkillSet, type SkillPart, saysWhen, skillBlock } from "./skills.ts";
 import { type ContextEntry, matchesFile, matchingError, skillsInContext, toolPath } from "./triggers.ts";
 
 /** The entry that loads a skill everywhere, also outside git repositories. */
@@ -264,6 +264,18 @@ function resultAdditions(
   return additions;
 }
 
+function skillStatusLines(skill: SkillEntry, pattern: string | undefined): string[] {
+  const lines = [
+    pattern === undefined ? `- ${skill.name}: not loaded` : `- ${skill.name}: loaded (matches ${pattern})`,
+  ];
+  const triggers = describeTriggers(skill.triggers);
+  if (triggers !== "") lines.push(`  triggers: ${triggers}`);
+  for (const [sub, { triggers: subTriggers }] of Object.entries(skill.subskills)) {
+    lines.push(`  subskill ${sub}: ${describeTriggers(subTriggers) || "no triggers"}`);
+  }
+  return lines;
+}
+
 function statusLines(config: LoadedConfig, match: MatchContext): string[] {
   const selected = new Map(selectSkills(config, match).map(({ skill, pattern }) => [skill.name, pattern]));
   const lines = [`config: ${config.path}`, `cwd: ${match.cwd}`];
@@ -280,16 +292,27 @@ function statusLines(config: LoadedConfig, match: MatchContext): string[] {
       : "scoring: off (no semantic.url)",
   );
   if (config.skills.length === 0) lines.push("no skills configured");
-  for (const skill of config.skills) {
-    const pattern = selected.get(skill.name);
-    lines.push(pattern === undefined ? `- ${skill.name}: not loaded` : `- ${skill.name}: loaded (matches ${pattern})`);
-    const { paths, extensions, errors } = skill.triggers;
-    const triggers = [...paths, ...extensions, ...errors.map((pattern) => `/${pattern}/`)];
-    if (triggers.length > 0) lines.push(`  triggers: ${triggers.join(", ")}`);
-  }
+  for (const skill of config.skills) lines.push(...skillStatusLines(skill, selected.get(skill.name)));
   lines.push(...config.errors.map((error) => `error: ${error}`));
   lines.push("Changed the config or the directory? Run /reload.");
   return lines;
+}
+
+function readSelectedSkills(selected: readonly Selected[]): { skills: LoadedSkill[]; errors: string[] } {
+  const skills: LoadedSkill[] = [];
+  const errors: string[] = [];
+  for (const { skill } of selected) {
+    const set = readSkillSet(skill);
+    skills.push(...set);
+    const found = new Set(set.slice(1).map((sub) => basename(sub.baseDir)));
+    for (const sub of Object.keys(skill.subskills)) {
+      if (!found.has(sub))
+        errors.push(
+          `${skill.name}: subskill "${sub}" is configured, but the skill has no folder ${sub}/ with a SKILL.md`,
+        );
+    }
+  }
+  return { skills, errors };
 }
 
 async function scoreCommand(
@@ -347,8 +370,9 @@ export function createRepoSkills(pi: RepoSkillsApi, options: Options = {}): void
     const match = matchContext(event.cwd);
     const selected = selectSkills(config, match);
     const { skillPaths, promptPaths, errors: pathErrors } = resourcePaths(selected);
-    errors = [...config.errors, ...pathErrors];
-    skills = selected.flatMap(({ skill }) => readSkill(skill) ?? []);
+    const loaded = readSelectedSkills(selected);
+    errors = [...config.errors, ...pathErrors, ...loaded.errors];
+    skills = loaded.skills;
     for (const skill of skills) {
       if (!saysWhen(skill)) {
         errors.push(`${skill.name}: the description does not say when to use the skill ("Use when ...")`);
@@ -426,6 +450,10 @@ export function createRepoSkills(pi: RepoSkillsApi, options: Options = {}): void
       ctx.ui.notify(statusLines(config, match).join("\n"), "info");
     },
   });
+}
+
+function describeTriggers({ paths, extensions, errors }: Triggers): string {
+  return [...paths, ...extensions, ...errors.map((pattern) => `/${pattern}/`)].join(", ");
 }
 
 /** `/repo-skills score <prompt>`: the scores of the loaded skills and the parts that would be added. */

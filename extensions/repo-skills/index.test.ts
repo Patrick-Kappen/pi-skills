@@ -135,7 +135,10 @@ describe("resourcePaths", () => {
   test("skips a skill without SKILL.md", () => {
     expect(
       resourcePaths([
-        { pattern: "*", skill: { name: "x", path: join(root, "nope"), repos: ["*"], triggers: NO_TRIGGERS } },
+        {
+          pattern: "*",
+          skill: { name: "x", path: join(root, "nope"), repos: ["*"], triggers: NO_TRIGGERS, subskills: {} },
+        },
       ]).errors,
     ).toHaveLength(1);
   });

@@ -30,6 +30,7 @@ function skillDir(name: string, description: string, extra = ""): string {
 }
 
 let gitDir = "";
+let bicepDir = "";
 let nixDir = "";
 
 function writeConfig(file: string, semantic: boolean): void {
@@ -54,6 +55,10 @@ function writeConfig(file: string, semantic: boolean): void {
           triggers: { extensions: [".scaffold"] },
         },
         vague: { path: skillDir("vague", "Helps."), repos: ["*"] },
+        bicep: {
+          path: bicepDir,
+          subskills: { storage: { triggers: { extensions: [".bicep"] } }, missing: {} },
+        },
       },
     }),
   );
@@ -65,6 +70,13 @@ beforeAll(() => {
   mkdirSync(work, { recursive: true });
   gitDir = skillDir("git", "Work with git. Use when rebasing.");
   nixDir = skillDir("nix", "NixOS environment. Use when a command is missing.");
+  bicepDir = skillDir("bicep", "Bicep rules and gotchas. Use when writing Bicep.");
+  const storage = join(bicepDir, "skills", "storage");
+  mkdirSync(storage, { recursive: true });
+  writeFileSync(
+    join(storage, "SKILL.md"),
+    "---\nname: storage\ndescription: Storage accounts. Use when adding storage.\n---\n\n# Storage\n",
+  );
   writeConfig(join(root, "on.json"), true);
   writeConfig(join(root, "off.json"), false);
 });
@@ -80,6 +92,7 @@ const fakeServer = vi.fn<Fetch>(async (url, init) => {
     if (body.query.includes("maybe") && document.startsWith("git:")) return 0.6;
     if (/rebase|git/.test(body.query) && (document.startsWith("git:") || document.includes("rebase"))) return 0.95;
     if (body.query.includes("scaffold") && document.startsWith("scaffold:")) return 0.95;
+    if (body.query.includes("storage account") && document.startsWith("bicep/storage:")) return 0.97;
     return 0.01;
   };
   if (body.query.includes("broken")) return new Response("", { status: 500 });
@@ -183,6 +196,29 @@ describe("input", () => {
   });
 });
 
+describe("sub-skills", () => {
+  test("a high score loads a hidden sub-skill, with the link back to its main skill", async () => {
+    const result = await setup().input("add a storage account with a private endpoint to the landing zone");
+    expect(result.text).toMatch(
+      /^<skill name="bicep\/storage" location="[^"]+">\nReferences are relative to [^\n]+\nPart of the skill bicep \(/,
+    );
+  });
+
+  test("a file trigger loads the sub-skill instead of suggesting it", () => {
+    const result = setup().fire("tool_call", { toolName: "edit", input: { path: "main.bicep" } }) as { reason: string };
+    expect(result.reason).toMatch(/^<skill name="bicep\/storage"/);
+  });
+
+  test("a configured sub-skill without a folder is reported", () => {
+    const ext = setup();
+    ext.fire("session_start", {});
+    expect(ext.notify).toHaveBeenCalledWith(
+      expect.stringContaining('bicep: subskill "missing" is configured'),
+      "warning",
+    );
+  });
+});
+
 describe("tool_call", () => {
   test("an edit of a covered file waits for the skill", () => {
     const ext = setup();
@@ -269,6 +305,8 @@ describe("/repo-skills", () => {
     const text = await setup().command("");
     expect(text).toContain("scoring: http://embed (load 0.9, hint 0.5, part 0.8)");
     expect(text).toContain("triggers: *.nix, /command not found/");
+    expect(text).toContain("  subskill storage: .bicep");
+    expect(text).toContain("  subskill missing: no triggers");
     expect(await setup(join(root, "off.json")).command("")).toContain("scoring: off");
   });
 

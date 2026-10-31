@@ -27,8 +27,8 @@ describe("parseConfig", () => {
     );
     expect(config.errors).toEqual([]);
     expect(config.skills).toEqual([
-      { name: "a", path: "/home/u/skills/a", repos: ["o/r", "*"], triggers: NO_TRIGGERS },
-      { name: "b", path: "/s/b", repos: ["~/src"], triggers: NO_TRIGGERS },
+      { name: "a", path: "/home/u/skills/a", repos: ["o/r", "*"], triggers: NO_TRIGGERS, subskills: {} },
+      { name: "b", path: "/s/b", repos: ["~/src"], triggers: NO_TRIGGERS, subskills: {} },
     ]);
   });
 
@@ -98,6 +98,30 @@ describe("triggers", () => {
   });
 });
 
+describe("subskills", () => {
+  test("triggers per sub-skill; invalid ones reported", () => {
+    const config = parseConfig(
+      {
+        skills: {
+          a: { path: "/s/a", subskills: { storage: { triggers: { paths: ["*.bicep"] } }, plain: {} } },
+          b: { path: "/s/b", subskills: [] },
+          c: { path: "/s/c", subskills: { x: 1 } },
+        },
+      },
+      "f",
+      home,
+    );
+    expect(config.skills[0]?.subskills).toEqual({
+      storage: { triggers: { paths: ["*.bicep"], extensions: [], errors: [] } },
+      plain: { triggers: NO_TRIGGERS },
+    });
+    expect(config.errors).toEqual([
+      'f: skill "b": "subskills" must be an object',
+      'f: skill "c": subskill "x" must be an object',
+    ]);
+  });
+});
+
 describe("semantic", () => {
   test("defaults, trailing slash removed", () => {
     expect(parseConfig({ semantic: { url: "http://h:1/" } }, "f", home).semantic).toEqual({
@@ -151,6 +175,8 @@ describe("loadConfig", () => {
     const file = join(dir, "ok.json");
     writeFileSync(file, JSON.stringify({ skills: { a: { path: "/s/a", repos: ["*"] } } }));
     chmodSync(file, 0o444);
-    expect(loadConfig(file, home).skills).toEqual([{ name: "a", path: "/s/a", repos: ["*"], triggers: NO_TRIGGERS }]);
+    expect(loadConfig(file, home).skills).toEqual([
+      { name: "a", path: "/s/a", repos: ["*"], triggers: NO_TRIGGERS, subskills: {} },
+    ]);
   });
 });

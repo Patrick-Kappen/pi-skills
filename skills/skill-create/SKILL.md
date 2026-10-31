@@ -2,7 +2,7 @@
 name: skill-create
 description: Create a new pi skill, or import an existing one, in the pi-skills repository - gather the facts, choose the structure, scaffold it with a script, write it to the repository rules and best practices, check it, and open a PR. Use when the user asks to make, write or add a skill, to turn a workflow, prompt or document into a skill, or to move a skill from elsewhere into the repository.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # skill-create
