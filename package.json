@@ -1,6 +1,6 @@
 {
   "name": "pi-skills",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "pi agent skills in a Nix flake, loaded per repository by the repo-skills extension",
   "type": "module",
