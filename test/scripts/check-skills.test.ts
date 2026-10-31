@@ -91,7 +91,7 @@ describe("checkRepo", () => {
   test("front matter problems", () => {
     const root = repo({
       "SKILL.md":
-        "---\nname: other\ndescription: Helps.\ncolor: red\ndisable-model-invocation: maybe\nmetadata:\n  version: one\n---\n",
+        "---\nname: other\ndescription: Helps.\ncolor: red\ndisable-model-invocation: maybe\nmetadata:\n  version: one\n---\n\nRun scripts/run.sh.\n",
     });
     expect(messages(root)).toEqual([
       'SKILL.md: unknown front matter field "color"',
@@ -109,7 +109,7 @@ describe("checkRepo", () => {
     const long = `---\nname: demo\ndescription: Use when ${"x".repeat(1100)}\nmetadata:\n  version: "1.0.0"\n---\n`;
     expect(messages(repo({ "SKILL.md": long }))[0]).toContain("maximum is 1024");
     const manual =
-      '---\nname: demo\ndescription: Does it.\ndisable-model-invocation: true\nmetadata:\n  version: "1.0.0"\n---\n';
+      '---\nname: demo\ndescription: Does it.\ndisable-model-invocation: true\nmetadata:\n  version: "1.0.0"\n---\n\nRun scripts/run.sh.\n';
     expect(messages(repo({ "SKILL.md": manual }))[0]).toContain("how to start it");
     const ok = manual.replace("Does it.", "Does it. Run only on request via /demo.");
     expect(messages(repo({ "SKILL.md": ok }))).toEqual([]);
@@ -140,6 +140,7 @@ describe("checkRepo", () => {
     mkdirSync(join(root, "scripts"));
     writeFileSync(join(root, "scripts/check-skills.ts"), "");
     expect(messages(root)).toEqual([
+      "SKILL.md: does not name scripts/plain.sh; say in SKILL.md what each script does and when to run it",
       "AGENTS.md: agent files stay out of the repository",
       "prompts/demo.md: a prompt template needs front matter with a description",
       "references/links.md: points to missing.md, which does not exist",
@@ -149,6 +150,20 @@ describe("checkRepo", () => {
       "references/todo.md: still has TODO markers from the skeleton",
       "scripts/plain.sh: scripts must be executable (chmod +x)",
       "scripts/plain.sh: scripts must start with a shebang",
+    ]);
+  });
+
+  test("every script is named in SKILL.md; libraries, notes and directories need not be", () => {
+    const root = repo({
+      "scripts/hidden.ts": "#!/usr/bin/env node\n",
+      "scripts/lib-x.sh": "x=1\n",
+      "scripts/README.md": "# scripts\n",
+      "scripts/sub/x.sh": "#!/usr/bin/env bash\n",
+    });
+    chmodSync(join(root, "skills/demo/scripts/hidden.ts"), 0o755);
+    chmodSync(join(root, "skills/demo/scripts/sub/x.sh"), 0o755);
+    expect(messages(root)).toEqual([
+      "SKILL.md: does not name scripts/hidden.ts; say in SKILL.md what each script does and when to run it",
     ]);
   });
 

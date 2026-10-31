@@ -33,6 +33,14 @@ ones marked **(checked)**; CI runs it.
 - English, plain and direct. Imperative instructions to the agent.
 - `SKILL.md` stays under 300 lines **(checked)**; details go to `references/`.
 - Files are referenced relative to `SKILL.md`, and every referenced file exists **(checked)**.
+- `SKILL.md` names every script in `scripts/` (except `lib*` libraries), with what it does and when
+  to run it **(checked)**. The agent often sees only `SKILL.md`: the repo-skills extension puts it
+  into the prompt with at most a few matching parts, so a script mentioned only in `references/` is
+  easily missed.
+- When a pi tool or an MCP server does an action of the skill (the pi-git tools, an Azure DevOps MCP
+  server), `SKILL.md` names it, says where it is available (MCP servers often load only in some
+  repositories, through repo-mcp), and what to do without it. See the "With the pi-git tools"
+  section of the git skill.
 - No paths to `~/.pi/agent/skills`, home directories (`/home/<user>/`) or Nix store paths: skills
   run from the read-only Nix store for any user **(checked)**. Use `~` for the user's home.
 - Every skill that changes code or repositories says that the work happens in a worktree with a
