@@ -32,6 +32,12 @@ foresee.
 - Put questions to the user in as few places as possible, all at once.
 - Say what to do when a step fails: stop, fix the cause, run the step again.
 
+## Enforce what must not fail
+
+Text is advice; the agent can miss it. For what must never happen, or must always be confirmed, and
+that shows in a tool call, propose a pi-rules permission (`deny` or `ask`) or hook next to the
+instruction. The skill keeps the reason, so the agent understands the block when it meets it.
+
 ## Protect the user
 
 - Name the actions that need confirmation (anything visible to others, anything destructive).

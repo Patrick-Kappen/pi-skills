@@ -49,6 +49,9 @@ ones marked **(checked)**; CI runs it.
 
 ## Changes
 
+- These rules and `best-practices.md` grow from reviews: skill-review logs lessons in
+  `learnings.md` and promotes a lesson when a second skill shows it. Do not add rules here without
+  that evidence or the user's request.
 - Every change is a branch and PR in the pi-skills repository, with Conventional Commits scoped to
   the skill (`feat(<name>): …`, `fix(<name>): …`).
 - Never merge the PR or the release PR.

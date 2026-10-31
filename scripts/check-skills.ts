@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Checks every skill in skills/ against the rules in skills/skill-create/references/rules.md.
+// Checks every skill in skills/ against the rules in skills/skill-create/references/skill-rules.md.
 // Usage: node scripts/check-skills.ts [repo-root] [skill-name...]
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, normalize, relative, resolve } from "node:path";

@@ -7,7 +7,7 @@ For a skill that lives elsewhere: `~/.pi/agent/skills`, a project's `.pi/skills`
    and ask which one is current.
 2. Run `new-skill.sh` with `--kind` matching the old layout, then replace the skeleton with the old
    files.
-3. Make it pass the repository rules (`rules.md`): front matter fields, `metadata.version`
+3. Make it pass the repository rules (`skill-rules.md`): front matter fields, `metadata.version`
    (`1.0.0` for the first version here), no paths to `~/.pi/agent/skills` or home directories, no
    agent files, executable scripts, references that exist. Scripts must work from the read-only
    Nix store.

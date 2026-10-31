@@ -12,7 +12,7 @@ in the repositories you list. It works like `repo-mcp` in
 | [`repo-scaffold`](skills/repo-scaffold/SKILL.md) | Scaffolds a new repository: devenv, hooks, checks, flake, GitHub CI/CD and releases. Prompt: `/repo-scaffold`. |
 | [`git`](skills/git/SKILL.md) | How to work with git and GitHub: worktrees in `~/.worktrees/<repo>/<topic>`, commits, PRs, CI, conflicts, stacked PRs, cleanup. Used by the agent, and by the helper of [pi-git](https://github.com/Patrick-Kappen/pi-git). |
 | [`skill-create`](skills/skill-create/SKILL.md) | Creates a new skill (or imports one) in this repository: intake, design, a scaffold script, the repository rules and best practices, checks, and a PR. Prompt: `/skill-create`. |
-| [`skill-review`](skills/skill-review/SKILL.md) | Improves a skill from evidence: finds the sessions that used it, lets a cheap model (`gpt-6-luna`) analyse them, and turns the report into approved changes and a PR. Prompt: `/skill-review`. |
+| [`skill-review`](skills/skill-review/SKILL.md) | Improves a skill from evidence: finds the sessions that used it, lets a cheap model (`gpt-6-luna`) analyse them, and turns the report into approved changes and a PR. Lessons that hold beyond the skill go into a learnings log, then into the skill rules of `skill-create` (from a second skill on), or into [pi-rules](https://github.com/Patrick-Kappen/pi-rules). Prompt: `/skill-review`. |
 
 ## Use with Home Manager
 
@@ -67,7 +67,7 @@ Use the skills for it: `/skill-create` for a new skill (or to import one from el
 `/skill-review <skill>` to improve one from how it was used in past sessions. Both work in a
 worktree of this repository and end with a PR.
 
-The rules are in [`skills/skill-create/references/rules.md`](skills/skill-create/references/rules.md).
+The rules are in [`skills/skill-create/references/skill-rules.md`](skills/skill-create/references/skill-rules.md).
 `node scripts/check-skills.ts .` checks most of them; `lint`, the pre-commit hook and CI run it. In
 short:
 

@@ -38,19 +38,23 @@ Ask in steps 1 and 2 only. Stop at the first failing step, fix the cause, and ru
 1. One skill, one job. Two unrelated jobs are two skills.
 2. Every fact in the skill is checked: commands run, paths exist, flags are current. Do not write
    from memory what you can look up or try.
-3. The repository rules in `references/rules.md` are not optional; `check-skills.ts` enforces most of
-   them in CI.
-4. Never merge the PR or the release PR; the user merges and releases.
-5. No secrets, customer names or personal data in a skill. Agent files (`AGENTS.md`,
+3. The repository rules in `references/skill-rules.md` are not optional; `check-skills.ts` enforces most of
+   them in CI. They grow from reviews: the skill-review skill logs lessons in
+   `references/learnings.md` and promotes them into the rules and best practices.
+4. What the agent must never do or always do, in any task, belongs in pi-rules (a rule, a
+   permission or a hook), not in a skill. A skill explains the why; pi-rules enforces it.
+5. Never merge the PR or the release PR; the user merges and releases.
+6. No secrets, customer names or personal data in a skill. Agent files (`AGENTS.md`,
    `CLAUDE.md`, `.pi/`, ...) stay out of git.
 
 ## References
 
 | File | Read when |
 |---|---|
-| `references/rules.md` | Always, before step 2 |
+| `references/skill-rules.md` | Always, before step 2 |
 | `references/best-practices.md` | Step 4 |
 | `references/description.md` | Writing the `description` (step 2) |
 | `references/structure.md` | Choosing the structure (step 2) |
 | `references/scripts.md` | The skill gets scripts |
 | `references/import.md` | Moving an existing skill into the repository |
+| `references/learnings.md` | Step 2: lessons from reviews; candidates may apply to this skill too |

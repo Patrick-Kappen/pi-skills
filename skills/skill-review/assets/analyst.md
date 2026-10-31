@@ -30,6 +30,10 @@ the agent's last step without complaint is probably a success.
 6. **Routing**: was the skill loaded when it should be, and only then? Was the wrong file read?
 7. **Context cost**: references read that were not needed, or a SKILL.md that is too long.
 8. **What worked**: instructions that clearly helped; keep them.
+9. **Lessons beyond this skill**: patterns that would likely hold for other skills too (how
+   instructions are worded, structured or ordered; what scripts should do), or for the agent in
+   general (behaviour that goes wrong in any task). Also: instructions the agent ignored that a
+   permission (deny or ask a tool call) or a hook (run a command around a tool call) could enforce.
 
 ## Report format
 
@@ -52,6 +56,12 @@ Write Markdown, in English, with exactly these sections:
 ## What works
 - <instruction or script>: <evidence>
 
+## Lessons beyond this skill
+### <the lesson, as an instruction>
+- Scope: skill writing | agent behaviour
+- Enforce as: text | permission | hook | check   (check: a script could verify it in every skill)
+- Evidence: <session id8>: <what happened>; <more>
+
 ## Open questions
 - <what the digests cannot settle and the owner must decide>
 ```
@@ -65,3 +75,5 @@ Rules:
   references/, repeated mechanical work in scripts/.
 - Never copy secrets, tokens, customer names or personal data from the digests into the report.
 - If the digests show no real problems, say so; an empty Findings section is a valid result.
+- A lesson beyond this skill needs the same evidence as a finding. Do not turn every finding into a
+  lesson: only patterns that do not depend on this skill's subject.
