@@ -21,6 +21,7 @@ let
     pkgs.shellcheck
     pkgs.jq
     pkgs.gh
+    pkgs.just
     pkgs.git
     pkgs.coreutils
   ];
