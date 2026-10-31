@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.9.0...v0.10.0) (2026-10-31)
+
+
+### Features
+
+* **nixos:** skill for missing commands, libraries and binaries on NixOS ([#24](https://github.com/Patrick-Kappen/pi-skills/issues/24)) ([89dcf88](https://github.com/Patrick-Kappen/pi-skills/commit/89dcf885c6494a8de5ed6ca8c35ae33012411f8b))
+
 ## [0.9.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.8.0...v0.9.0) (2026-10-31)
 
 
