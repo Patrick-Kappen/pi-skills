@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "checks": [
+    { "id": "lint", "argv": ["just", "lint"], "timeoutSeconds": 900 },
+    { "id": "typecheck", "argv": ["just", "typecheck"], "timeoutSeconds": 900 },
+    { "id": "test", "argv": ["just", "test"], "timeoutSeconds": 1800 },
+    { "id": "coverage", "argv": ["just", "coverage"], "timeoutSeconds": 1800 },
+    { "id": "duplicates", "argv": ["just", "duplicates"], "timeoutSeconds": 900 },
+    { "id": "dead-code", "argv": ["just", "dead-code"], "timeoutSeconds": 900 },
+    { "id": "architecture", "argv": ["just", "architecture"], "timeoutSeconds": 900 },
+    { "id": "security", "argv": ["just", "security"], "timeoutSeconds": 1800 },
+    { "id": "nix", "argv": ["just", "nix-check"], "timeoutSeconds": 1800 },
+    { "id": "hm", "argv": ["just", "hm-check"], "timeoutSeconds": 1800 }
+  ]
+}

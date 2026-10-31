@@ -1,0 +1,16 @@
+name: Release
+on:
+  push:
+    branches: ["@DEFAULT_BRANCH@"]
+permissions: {}
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@PIN:googleapis/release-please-action@
+        with:
+          config-file: platform-release-please-config.json
+          manifest-file: platform-release-please-manifest.json

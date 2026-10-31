@@ -7,6 +7,6 @@
     "skills/*/scripts/*.ts"
   ],
   "project": ["extensions/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "skills/*/scripts/**/*.ts"],
-  "ignoreBinaries": ["biome"],
+  "ignoreBinaries": ["actionlint", "biome", "just", "nix", "nix-instantiate", "nixfmt"],
   "ignoreExportsUsedInFile": true
 }

@@ -1,0 +1,68 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+inspect:
+    node scripts/platform/inventory.ts --repo .
+
+plan:
+    node scripts/platform/plan-change.ts --repo . --base "@BASE_REF@"
+
+lint:
+    biome check .
+    markdownlint-cli2 "**/*.md"
+    shellcheck .githooks/* $(git ls-files '*.sh')
+    actionlint
+    zizmor --offline --min-severity=low .github/workflows
+    typos
+    nixfmt --check $(find . \( -path './.git' -o -path './node_modules' -o -path './.devenv' -o -path './.cache' \) -prune -o -name '*.nix' -print)
+    statix check .
+    deadnix --fail .
+
+typecheck:
+    tsc --noEmit
+
+test-changed:
+    node scripts/platform/plan-change.ts --repo . --base "@BASE_REF@"
+    node scripts/platform/run-checks.ts --repo . --manifest platform-checks.json --only test,coverage
+
+test:
+    vitest run --project integration --coverage.enabled=false
+
+test-serial:
+    vitest run --coverage.enabled=false --pool=forks --maxWorkers=1
+
+coverage:
+    vitest run --project unit --coverage --coverage.reportsDirectory=.cache/platform/coverage
+
+duplicates:
+    jscpd packages --min-tokens 70 --threshold 0 --reporters console --ignore '**/*.test.ts,**/node_modules/**'
+
+dead-code:
+    knip
+
+architecture:
+    dependency-cruiser --config .dependency-cruiser.cjs packages
+
+security:
+    gitleaks git --redact --no-banner .
+    osv-scanner scan source --recursive .
+
+nix-check:
+    nix flake check --print-build-logs
+
+check:
+    node scripts/platform/policy-hook.mjs
+
+release-plan:
+    node scripts/platform/release-plan.ts --repo . --base "@BASE_REF@"
+
+hm-check:
+    nix build .#checks.x86_64-linux.home-manager-module --print-build-logs
+
+job-start *args:
+    node scripts/platform/jobs.ts start --repo . {{ args }}
+
+job-status *args:
+    node scripts/platform/jobs.ts status {{ args }}
+
+job-cancel *args:
+    node scripts/platform/jobs.ts cancel {{ args }}
