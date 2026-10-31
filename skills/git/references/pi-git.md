@@ -7,7 +7,9 @@ needs you.
 ## Which tool
 
 - **Start:** `git_start` with the repository, a topic and a type (and `base` for a stacked change).
-  It returns the worktree path and what to know first; make the change there.
+  It fetches, starts from `origin/<base>` (or the local branch of another worktree for work not on
+  GitHub yet), and returns the worktree path and what to know first; make the change there. For a
+  worktree that exists, it says how far it is behind its base.
 - **What is open:** `git_status`. Use it before asking the user what is in progress.
 - **A PR made by hand, or by someone else, that should be followed:** `git_watch` with its number.
 
