@@ -15,6 +15,8 @@
 - Branch names: `<type>/<short-topic>`, for example `feat/login`.
 - One concern per PR. The title is a Conventional Commit, because it becomes the squash commit.
 - CI must pass. The owner reviews and merges; agents never merge.
+- The `main` ruleset lets the repository admin bypass it, for the owner in an emergency. Agents never
+  use that bypass: no direct pushes to `main`, no merges past failing or missing checks.
 
 ## Releases
 
