@@ -96,7 +96,10 @@ async function loadedIn(cwd: string): Promise<{ skills: string[]; prompts: strin
 
 describe("pi loads skills through repo-skills", () => {
   test("main checkout", async () => {
-    expect(await loadedIn(main)).toEqual({ skills: ["repo-scaffold", "local-skill"], prompts: ["repo-scaffold"] });
+    expect(await loadedIn(main)).toEqual({
+      skills: ["repo-scaffold", "local-skill"],
+      prompts: ["repo-scaffold", "repo-settings"],
+    });
   });
 
   test("subdirectory of a linked worktree", async () => {

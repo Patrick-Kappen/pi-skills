@@ -18,13 +18,10 @@
 - Sections: Features, Bug Fixes, Performance, Reverts, Documentation. refactor, test, build, ci and
   chore are hidden.
 
-## Repository settings (`scripts/github.sh`)
+## Repository settings
 
-- Only squash merges; the squash commit is the PR title plus the PR body. Branches are deleted on
-  merge, and auto-merge is allowed.
-- Workflow permissions: `read`. `can_approve_pull_request_reviews=true`, so release-please may open
-  PRs.
-- Topics: the language and `devenv`.
+`scripts/github.sh` sets the topics (the language and `devenv`); everything else comes from
+`scripts/github-settings.ts`, described in `references/github-settings.md`.
 
 ## Tokens
 

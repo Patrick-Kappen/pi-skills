@@ -1,9 +1,9 @@
 ---
 name: repo-scaffold
-description: Scaffold a new git repository with a devenv dev environment, git hooks, linters, tests, security scans, an optional Nix flake, and GitHub CI/CD with release-please. Run only on request via /repo-scaffold.
+description: Scaffold a new git repository with a devenv dev environment, git hooks, linters, tests, security scans, an optional Nix flake, and GitHub CI/CD with release-please; also check and fix the GitHub settings (branch ruleset, merges, security) of existing repositories. Run only on request via /repo-scaffold or /repo-settings.
 disable-model-invocation: true
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # repo-scaffold
@@ -11,6 +11,9 @@ metadata:
 Start it with `/repo-scaffold <name> <work|private> <public|private> [language] [description]` (a
 prompt template in `prompts/` of this skill) or with `/skill:repo-scaffold ...`. It is not offered to
 the model on its own.
+
+To check or fix the GitHub settings of existing repositories, start it with
+`/repo-settings <owner/repo>... | --all <owner>` and follow only `guides/09-settings.md`.
 
 This file is an index. Follow the guides in order and read each guide fully before acting. Read a
 reference only when a guide points to it. Do not improvise steps that a script does.
@@ -50,6 +53,7 @@ All values, validation and their effects: `references/parameters.md`.
 | 6 | `guides/06-first-commit.md` | Make the first commits | `<skill>/scripts/first-commits.sh <repo>` |
 | 7 | `guides/07-github.md` | Create, configure and push the GitHub repo | `<skill>/scripts/github.sh <repo> --yes` |
 | 8 | `guides/08-handover.md` | Report to the user | — |
+| 9 | `guides/09-settings.md` | Only for `/repo-settings`: check, then fix on approval | `<skill>/scripts/github-settings.ts` |
 
 Steps 1 and 2 need the user; ask everything there, at once. Steps 3 to 6 run without questions.
 Step 7 asks one confirmation (only if `github=yes`). Stop at the first failing step, fix the cause,
@@ -65,6 +69,7 @@ and run that step again. Never skip a step silently.
 | `references/hooks.md` | Hooks do not run, or run twice; the owner's global hooks |
 | `references/languages.md` | Language specifics, or adding a language to this skill |
 | `references/ci-cd.md` | Workflows, release-please, the `latest` branch, Dependabot |
+| `references/github-settings.md` | The GitHub settings: merges, Actions, security, the `main` ruleset |
 | `references/security.md` | Secret scanning, dependency audit, Actions hardening |
 | `references/conventions.md` | Commit messages, branches, PRs, who merges and releases |
 | `references/troubleshooting.md` | Something fails |
@@ -85,7 +90,8 @@ Change templates there, not in the generated repos.
 - The user decides about merging and releasing. Never merge a PR, and never merge the release-please
   PR.
 - Ask before anything that is visible to others: creating the GitHub repo, pushing, changing
-  visibility.
+  visibility or settings.
+- Never use the admin bypass of the `main` ruleset; it is for the owner only.
 - Do not commit secrets. Do not weaken a check to make it pass; fix the cause.
 - Agent files (`AGENTS.md`, `CLAUDE.md`, `.claude/`, `.cursor/`, `.pi/`, ...) stay out of git, and the
   scaffold never creates them; see `references/conventions.md`.

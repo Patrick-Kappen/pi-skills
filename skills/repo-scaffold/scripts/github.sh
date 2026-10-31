@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Usage: github.sh <repository directory> --yes
-# Creates the GitHub repository from the scaffold settings, configures it (squash merges only,
-# delete branches on merge, workflow permissions for release-please, topics) and pushes main.
+# Creates the GitHub repository from the scaffold settings, sets its topics, pushes main, and then
+# applies the GitHub settings of github-settings.ts (merges, Actions, security, branch ruleset).
 # --yes confirms that the user agreed: this is visible to others.
 # The settings come from load_settings (.git/repo-scaffold.env).
 # shellcheck disable=SC2154
@@ -20,18 +20,14 @@ if gh repo view "${repo}" >/dev/null 2>&1; then
   die "${repo} already exists on GitHub"
 fi
 gh repo create "${repo}" "--${visibility}" --description "${description}" --source . --remote origin
-gh api -X PATCH "repos/${repo}" \
-  -F allow_squash_merge=true -F allow_merge_commit=false -F allow_rebase_merge=false \
-  -F delete_branch_on_merge=true -F allow_auto_merge=true \
-  -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY >/dev/null
-gh api -X PUT "repos/${repo}/actions/permissions/workflow" \
-  -f default_workflow_permissions=read -F can_approve_pull_request_reviews=true >/dev/null
 topics=(-f "names[]=devenv")
 [[ ${language} != none ]] && topics+=(-f "names[]=${language}")
 [[ -f flake.nix ]] && topics+=(-f "names[]=nix")
 gh api -X PUT "repos/${repo}/topics" "${topics[@]}" >/dev/null
-info "created and configured https://github.com/${repo}"
+info "created https://github.com/${repo}"
 
 info "pushing main (the pre-push hook runs check)"
 git push -u origin main
-info "pushed; CI: gh run list -R ${repo}"
+# After the push: the ruleset requires the CI job names from ci.yml on the default branch.
+"${skill_dir}/scripts/github-settings.ts" "${repo}" --apply --yes
+info "pushed and configured; CI: gh run list -R ${repo}"
