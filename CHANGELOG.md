@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.8.0...v0.9.0) (2026-10-31)
+
+
+### Features
+
+* load every skill everywhere unless configured otherwise ([#26](https://github.com/Patrick-Kappen/pi-skills/issues/26)) ([79b7dd2](https://github.com/Patrick-Kappen/pi-skills/commit/79b7dd2583a33f5d00402747e0078d4a6b85504d))
+
 ## [0.8.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.7.0...v0.8.0) (2026-10-31)
 
 
