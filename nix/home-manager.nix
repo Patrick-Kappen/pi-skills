@@ -17,6 +17,11 @@ let
     { name, ... }:
     {
       options = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Whether the skill loads at all. Set it to false to turn off a skill of this flake.";
+        };
         path = lib.mkOption {
           type = lib.types.either lib.types.path lib.types.str;
           default = "${cfg.skillsPackage}/${name}";
@@ -28,6 +33,7 @@ let
         };
         repos = lib.mkOption {
           type = lib.types.nonEmptyListOf lib.types.str;
+          default = [ "*" ];
           example = [
             "my-org/infra"
             "my-org/*"
@@ -35,7 +41,7 @@ let
             "*"
           ];
           description = ''
-            Where the skill loads. An entry is either
+            Where the skill loads; everywhere by default. An entry is either
 
             - `*`: everywhere, also outside git repositories;
             - a remote: `owner/repo`, `host/owner/repo` or with `*` (`owner/*`). It matches when any
@@ -170,7 +176,7 @@ in
       default = { };
       example = lib.literalExpression ''
         {
-          repo-scaffold.repos = [ "*" ];
+          repo-scaffold.enable = false;
           terraform.repos = [ "my-org/infra" "my-org/*" ];
           my-own = {
             path = ./skills/my-own;
@@ -179,13 +185,17 @@ in
         }
       '';
       description = ''
-        Skills by name, and where each loads. A skill that is not listed loads nowhere. Without
-        `path`, the name must be a skill of this flake: ${lib.concatStringsSep ", " ownSkills}.
+        Skills by name, and where each loads. Every skill of this flake
+        (${lib.concatStringsSep ", " ownSkills}) is here by default and loads everywhere; set
+        `repos` to limit it, or `enable = false` to turn it off. A skill from elsewhere needs `path`.
       '';
     };
   };
 
   config = lib.mkIf cfg.enable {
+    # Every skill of this flake, with the defaults above: everywhere, unless configured otherwise.
+    programs.pi-skills.skills = lib.genAttrs ownSkills (_: { });
+
     assertions = lib.mapAttrsToList (name: skill: {
       assertion = skill.path != "${cfg.skillsPackage}/${name}" || builtins.elem name ownSkills;
       message = "programs.pi-skills.skills.${name}: not a skill of pi-skills (${lib.concatStringsSep ", " ownSkills}); set `path`.";
@@ -199,7 +209,7 @@ in
             # A Nix path goes to the store; a string stays as it is.
             path = "${skill.path}";
             inherit (skill) repos triggers;
-          }) cfg.skills;
+          }) (lib.filterAttrs (_: skill: skill.enable) cfg.skills);
         }
         // lib.optionalAttrs (cfg.semantic != null) { inherit (cfg) semantic; }
       );

@@ -50,7 +50,6 @@ describe("parseConfig", () => {
           notObject: 1,
           noPath: { repos: ["o/r"] },
           relative: { path: "skills/x", repos: ["o/r"] },
-          noRepos: { path: "/s" },
           emptyRepos: { path: "/s", repos: [] },
           blankRepo: { path: "/s", repos: [" "] },
           ok: { path: "/s/ok", repos: ["o/r"] },
@@ -60,7 +59,13 @@ describe("parseConfig", () => {
       home,
     );
     expect(config.skills.map((skill) => skill.name)).toEqual(["ok"]);
-    expect(config.errors).toHaveLength(6);
+    expect(config.errors).toHaveLength(5);
+  });
+
+  test("without repos, a skill loads everywhere", () => {
+    const config = parseConfig({ skills: { a: { path: "/s/a" } } }, "f", home);
+    expect(config.errors).toEqual([]);
+    expect(config.skills[0]?.repos).toEqual(["*"]);
   });
 });
 

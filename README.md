@@ -4,8 +4,8 @@ pi agent skills in a Nix flake, loaded per repository by the repo-skills extensi
 also loads a skill by itself when a prompt, a file or an error calls for it.
 
 pi loads every skill in `~/.pi/agent/skills` in every repository. This flake keeps the skills out of
-that directory. The [`repo-skills`](extensions/repo-skills/README.md) extension loads a skill only
-in the repositories you list. It works like `repo-mcp` in
+that directory. The [`repo-skills`](extensions/repo-skills/README.md) extension loads them:
+everywhere by default, or only in the repositories you list. It works like `repo-mcp` in
 [pi-mcp-servers](https://github.com/Patrick-Kappen/pi-mcp-servers).
 
 | Skill | What it does |
@@ -36,12 +36,12 @@ in the repositories you list. It works like `repo-mcp` in
   programs.pi-skills = {
     enable = true;
     semantic.url = "http://localhost:8097";                 # score prompts; optional
+    # Every skill of this flake loads everywhere; configure only what differs.
     skills = {
-      repo-scaffold.repos = [ "*" ];                        # everywhere
-      git.repos = [ "*" ];
+      # repo-scaffold.enable = false;                       # turn a skill off
       # terraform.repos = [ "my-org/infra" "my-org/*" ];   # in these repositories
       # notes.repos = [ "~/private/notes" ];               # in this directory
-      # my-own = { path = ./skills/my-own; repos = [ "*" ]; };   # a skill from elsewhere
+      # my-own.path = ./skills/my-own;                     # a skill from elsewhere, everywhere
       # terraform.triggers.extensions = [ ".tf" ];          # load it when a .tf file is touched
     };
   };
@@ -49,11 +49,13 @@ in the repositories you list. It works like `repo-mcp` in
 ```
 
 The module installs the extension in `~/.pi/agent/extensions/repo-skills` and writes
-`~/.pi/agent/repo-skills.json`. A skill that is not listed loads nowhere.
+`~/.pi/agent/repo-skills.json`. Every skill of this flake is in it and loads everywhere, unless
+you set its `repos` or `enable = false`.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `skills.<name>.repos` | (required) | Where the skill loads: `*`, `owner/repo`, `host/owner/repo`, `owner/*`, or a path such as `~/src/project`. See the [extension README](extensions/repo-skills/README.md#repos-entries). |
+| `skills.<name>.enable` | `true` | Whether the skill loads at all. |
+| `skills.<name>.repos` | `[ "*" ]` | Where the skill loads: `*`, `owner/repo`, `host/owner/repo`, `owner/*`, or a path such as `~/src/project`. See the [extension README](extensions/repo-skills/README.md#repos-entries). |
 | `skills.<name>.path` | the skill `<name>` of this flake | Directory with the skill's `SKILL.md`, for a skill from elsewhere. |
 | `skills.<name>.triggers.{paths,extensions,errors}` | `[ ]` | Files (globs, extensions) and tool errors (regular expressions) that load the skill by themselves. See [Triggers](extensions/repo-skills/README.md#triggers). |
 | `semantic` | `null` | Embedding and rerank server that scores each prompt against the skills: `url`, plus `embedModel`, `rerankModel`, `load` (0.9), `hint` (0.5), `part` (0.8), `maxParts`, `candidates`, `timeoutMs`. See [Scoring the prompt](extensions/repo-skills/README.md#scoring-the-prompt). |

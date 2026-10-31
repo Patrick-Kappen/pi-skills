@@ -177,6 +177,35 @@ function parseSemantic(raw: unknown, path: string, errors: string[]): SemanticCo
  * `{ "semantic": { "url": "http://localhost:8097" }, "skills": { "<name>": { "path": "/dir/with/SKILL.md",
  * "repos": ["owner/repo", "~/path", "*"], "triggers": { "paths": [], "extensions": [], "errors": [] } } } }`.
  */
+function parseSkill(
+  name: string,
+  value: unknown,
+  path: string,
+  home: string,
+  errors: string[],
+): SkillEntry | undefined {
+  if (!isRecord(value)) {
+    errors.push(`${path}: skill "${name}" must be an object`);
+    return undefined;
+  }
+  const { path: dir, repos } = value;
+  if (typeof dir !== "string" || !(isAbsolute(dir) || dir === "~" || dir.startsWith("~/"))) {
+    errors.push(`${path}: skill "${name}" needs "path": an absolute path or ~/path to its directory`);
+    return undefined;
+  }
+  // Without "repos", a skill loads everywhere.
+  if (repos !== undefined && !isRepoList(repos)) {
+    errors.push(`${path}: skill "${name}": "repos" must be a non-empty list of repositories, paths or "*"`);
+    return undefined;
+  }
+  return {
+    name,
+    path: expandHome(dir, home),
+    repos: repos === undefined ? ["*"] : repos.map((repo) => repo.trim()),
+    triggers: parseTriggers(value.triggers, `${path}: skill "${name}"`, errors),
+  };
+}
+
 export function parseConfig(raw: unknown, path: string, home: string = homedir()): LoadedConfig {
   const result: LoadedConfig = { path, skills: [], errors: [] };
   if (!isRecord(raw)) {
@@ -189,25 +218,8 @@ export function parseConfig(raw: unknown, path: string, home: string = homedir()
     return result;
   }
   for (const [name, value] of Object.entries(skills)) {
-    if (!isRecord(value)) {
-      result.errors.push(`${path}: skill "${name}" must be an object`);
-      continue;
-    }
-    const { path: dir, repos } = value;
-    if (typeof dir !== "string" || !(isAbsolute(dir) || dir === "~" || dir.startsWith("~/"))) {
-      result.errors.push(`${path}: skill "${name}" needs "path": an absolute path or ~/path to its directory`);
-      continue;
-    }
-    if (!isRepoList(repos)) {
-      result.errors.push(`${path}: skill "${name}" needs "repos": a non-empty list of repositories, paths or "*"`);
-      continue;
-    }
-    result.skills.push({
-      name,
-      path: expandHome(dir, home),
-      repos: repos.map((repo) => repo.trim()),
-      triggers: parseTriggers(value.triggers, `${path}: skill "${name}"`, result.errors),
-    });
+    const skill = parseSkill(name, value, path, home, result.errors);
+    if (skill) result.skills.push(skill);
   }
   const semantic = parseSemantic(raw.semantic, path, result.errors);
   if (semantic) result.semantic = semantic;
