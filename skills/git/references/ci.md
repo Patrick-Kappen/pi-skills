@@ -9,6 +9,8 @@
 
 ## Watch
 
+With pi-git, do not: the watcher follows the PR after `git_pr` (`pi-git.md`). By hand:
+
 ```sh
 gh pr checks <n> --watch            # until all checks are done
 gh pr checks <n>                    # the current state

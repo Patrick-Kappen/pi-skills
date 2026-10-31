@@ -51,4 +51,5 @@ A change that needs another unmerged branch:
 ## Merge
 
 The owner merges. Do not merge, do not enable auto-merge, do not approve your own PR. When the PR is
-ready, say so and stop. A release-please PR is also the owner's.
+ready, say so and stop. A release-please PR is also the owner's. pi-git's `/ship` (merge, release,
+roll out) is the owner's command too.
