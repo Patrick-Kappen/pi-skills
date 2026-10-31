@@ -35,7 +35,7 @@ describe("new-skill.sh", () => {
     const root = repo();
     const out = run(root, "--name", "demo", "--kind", "single", "--description", describeOk, "--dry-run");
     expect(out).toContain("skills/demo (single)");
-    expect(out).toContain("files        references/topic.md SKILL.md");
+    expect(out).toContain("files        SKILL.md references/topic.md");
     expect(existsSync(join(root, "skills/demo"))).toBe(false);
   });
 

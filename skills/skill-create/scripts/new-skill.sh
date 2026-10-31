@@ -45,7 +45,7 @@ templates="${here}/../templates"
 target="${repo}/skills/${name}"
 [[ ! -e ${target} ]] || die "skills/${name} already exists; use the skill-review skill to change it"
 
-mapfile -t files < <(cd "${templates}/${kind}" && find . -type f | sed 's|^\./||' | sort)
+mapfile -t files < <(cd "${templates}/${kind}" && find . -type f | sed 's|^\./||' | LC_ALL=C sort)
 [[ ${prompt} -eq 1 ]] && files+=("prompts/${name}.md" "prompts/.markdownlint-cli2.jsonc")
 if [[ ${manual} -eq 1 ]]; then start="only on request (disable-model-invocation: true)"; else start="loaded by the model when relevant"; fi
 
