@@ -80,6 +80,9 @@ export type RepoSkillsApi = Pick<ExtensionAPI, "on" | "registerCommand" | "appen
 /** The custom entry that records each scoring, to tune the thresholds later. It is not sent to the model. */
 export const SCORE_ENTRY = "repo-skills-score";
 
+/** The custom message that carries a note to the model; hidden from the user. */
+export const NOTE_MESSAGE = "repo-skills-note";
+
 /** A follow-up shorter than this is scored together with the previous user message. */
 const SHORT_PROMPT = 60;
 
@@ -120,8 +123,8 @@ export function note(decision: Decision): string | undefined {
       );
     case "hint":
       return (
-        `<system>The skill ${decision.skill.name} probably applies to this request. Read ${decision.skill.filePath} before you answer or change anything` +
-        `${decision.parts.length > 0 ? `, then ${partList(decision.parts)} next to it` : ""}.</system>`
+        `<system>The skill ${decision.skill.name} may apply to this request. If the task matches its description, read ${decision.skill.filePath}` +
+        `${decision.parts.length > 0 ? `, then ${partList(decision.parts)} next to it` : ""}; otherwise ignore this note.</system>`
       );
     case "suggest":
       return `<system>The skill ${decision.skill.name} may fit this request, but it runs only on request. Suggest /skill:${decision.skill.name} to the user; do not run it yourself.</system>`;
@@ -192,11 +195,18 @@ function recordScore(pi: RepoSkillsApi, scored: ScoredPrompt): void {
   });
 }
 
+/**
+ * What the input handler returns: a loaded skill goes before the prompt, where the user sees it as a
+ * collapsed skill block. A note does not change the prompt; `setNote` keeps it for
+ * `before_agent_start`, which adds it as a message the user does not see. A message sent while the
+ * agent runs gets no note, because no new run starts for it.
+ */
 function inputResult(
   event: InputEvent,
   ctx: ExtensionContext,
   decision: Decision,
   notify: (ctx: ExtensionContext, text: string) => void,
+  setNote: (note: string) => void,
 ): InputEventResult {
   if (decision.kind === "none") return { action: "continue" };
   const score = decision.score.toFixed(2);
@@ -210,11 +220,9 @@ function inputResult(
     };
   }
   if (decision.kind === "suggest") notify(ctx, `/skill:${decision.skill.name} may help (${score})`);
-  return {
-    action: "transform",
-    text: `${event.text}\n\n${note(decision)}`,
-    ...(event.images ? { images: event.images } : {}),
-  };
+  const text = note(decision);
+  if (text && !event.streamingBehavior) setNote(text);
+  return { action: "continue" };
 }
 
 function resultOutput(event: ToolResultEvent): string {
@@ -340,6 +348,8 @@ export function createRepoSkills(pi: RepoSkillsApi, options: Options = {}): void
   let ranker: SemanticRanker | undefined;
   /** Skills added to tool results in the current turn, which are not in the session entries yet. */
   const addedThisTurn = new Set<string>();
+  /** The note for the next run, from scoring the prompt that starts it. */
+  let pendingNote: string | undefined;
   /** Run-only-on-request skills already suggested in this session. */
   const suggested = new Set<string>();
 
@@ -395,11 +405,22 @@ export function createRepoSkills(pi: RepoSkillsApi, options: Options = {}): void
 
   // Scores the prompt against the skills and loads the best one before the model sees the prompt.
   pi.on("input", async (event, ctx) => {
+    pendingNote = undefined;
     if (!ranker || skills.length === 0 || event.text.trimStart().startsWith("/")) return { action: "continue" };
     const scored = await scoreInput(event, ctx, ranker, skills, inContext);
     if (!scored) return { action: "continue" };
     recordScore(pi, scored);
-    return inputResult(event, ctx, scored.decision, notify);
+    return inputResult(event, ctx, scored.decision, notify, (text) => {
+      pendingNote = text;
+    });
+  });
+
+  // The note of the last prompt, as a message the model reads and the user does not see.
+  pi.on("before_agent_start", (event) => {
+    const text = pendingNote;
+    pendingNote = undefined;
+    if (!text || event.messageType !== "user") return undefined;
+    return { message: { customType: NOTE_MESSAGE, content: text, display: false } };
   });
 
   // Edits and writes of files a skill covers wait until the skill is in context; a second read of a
