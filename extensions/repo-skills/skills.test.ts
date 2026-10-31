@@ -6,7 +6,7 @@ import { NO_TRIGGERS } from "./config.ts";
 import {
   type LoadedSkill,
   partExcerpt,
-  readSkill,
+  readSkillSet,
   saysWhen,
   skillBlock,
   skillMarker,
@@ -66,6 +66,8 @@ describe("splitFrontmatter", () => {
   });
 });
 
+const readSkill = (entry: Parameters<typeof readSkillSet>[0]) => readSkillSet(entry)[0];
+
 describe("readSkill", () => {
   test("front matter, body and parts", () => {
     const dir = join(root, "demo");
@@ -77,7 +79,7 @@ describe("readSkill", () => {
     write(join(dir, "guides", "01-a.md"), "A");
     for (const skip of ["prompts", "templates", "assets", "scripts", ".hidden"]) write(join(dir, skip, "x.md"), "no");
     write(join(dir, "references", "notes.txt"), "no");
-    const skill = readSkill({ name: "demo", path: dir, repos: ["*"], triggers: NO_TRIGGERS });
+    const skill = readSkill({ name: "demo", path: dir, repos: ["*"], triggers: NO_TRIGGERS, subskills: {} });
     expect(skill).toMatchObject({
       name: "demo",
       description: "Do things. Use when asked.",
@@ -95,7 +97,7 @@ describe("readSkill", () => {
   test("defaults without front matter", () => {
     const dir = join(root, "bare");
     write(join(dir, "SKILL.md"), "body");
-    expect(readSkill({ name: "bare", path: dir, repos: ["*"], triggers: NO_TRIGGERS })).toMatchObject({
+    expect(readSkill({ name: "bare", path: dir, repos: ["*"], triggers: NO_TRIGGERS, subskills: {} })).toMatchObject({
       name: "bare",
       description: "",
       disableModelInvocation: false,
@@ -103,7 +105,9 @@ describe("readSkill", () => {
   });
 
   test("missing SKILL.md", () => {
-    expect(readSkill({ name: "x", path: join(root, "none"), repos: ["*"], triggers: NO_TRIGGERS })).toBeUndefined();
+    expect(
+      readSkill({ name: "x", path: join(root, "none"), repos: ["*"], triggers: NO_TRIGGERS, subskills: {} }),
+    ).toBeUndefined();
   });
 });
 
@@ -117,6 +121,56 @@ const skill: LoadedSkill = {
   parts: [],
   triggers: NO_TRIGGERS,
 };
+
+describe("sub-skills", () => {
+  const dir = join(root, "sltn");
+  write(join(dir, "SKILL.md"), "---\nname: sltn\ndescription: Bicep rules. Use when writing Bicep.\n---\n\n# Rules\n");
+  write(join(dir, "references", "gotchas.md"), "gotchas");
+  write(
+    join(dir, "skills", "storage", "SKILL.md"),
+    "---\nname: storage\ndescription: Storage accounts. Use when adding storage.\ndisable-model-invocation: true\n---\n\n# Storage\n",
+  );
+  write(join(dir, "skills", "storage", "references", "private-endpoints.md"), "pe");
+  write(
+    join(dir, "skills", "storage", "skills", "queues", "SKILL.md"),
+    "---\ndescription: Queues. Use when adding queues.\n---\nq",
+  );
+  write(join(dir, "skills", "network", "SKILL.md"), "---\ndescription: VNets. Use when adding networks.\n---\nn");
+  const triggers = { paths: ["*.bicep"], extensions: [], errors: [] };
+  const set = readSkillSet({
+    name: "sltn",
+    path: dir,
+    repos: ["*"],
+    triggers: NO_TRIGGERS,
+    subskills: { storage: { triggers } },
+  });
+
+  test("the main skill first, its parts without the sub-skills", () => {
+    expect(set.map((skill) => skill.name)).toEqual(["sltn", "sltn/network", "sltn/storage", "sltn/queues"]);
+    expect(set[0]?.parts.map((part) => part.path)).toEqual(["references/gotchas.md"]);
+    expect(set[0]?.parent).toBeUndefined();
+  });
+
+  test("sub-skills link back to the main skill, load by trigger, and are not run-only-on-request", () => {
+    const storage = set.find((skill) => skill.name === "sltn/storage");
+    expect(storage).toMatchObject({
+      parent: { name: "sltn", filePath: join(dir, "SKILL.md") },
+      disableModelInvocation: false,
+      triggers,
+      parts: [{ path: "references/private-endpoints.md", text: "pe" }],
+    });
+    expect(set.find((skill) => skill.name === "sltn/queues")?.parent?.name).toBe("sltn");
+    expect(set.find((skill) => skill.name === "sltn/network")?.triggers).toEqual(NO_TRIGGERS);
+  });
+
+  test("the block of a sub-skill names its main skill", () => {
+    const block = skillBlock(set.find((skill) => skill.name === "sltn/storage") as LoadedSkill);
+    expect(block).toMatch(
+      /^<skill name="sltn\/storage" location="[^"]+">\nReferences are relative to [^\n]+\nPart of the skill sltn \(/,
+    );
+    expect(skillBlock(set[0] as LoadedSkill)).not.toContain("Part of the skill");
+  });
+});
 
 describe("saysWhen", () => {
   test.each([

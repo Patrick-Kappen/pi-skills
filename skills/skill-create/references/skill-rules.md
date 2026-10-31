@@ -15,6 +15,9 @@ ones marked **(checked)**; CI runs it.
   needs front matter with a `description` **(checked)**. Do not put other Markdown there.
 - `assets/` holds files scripts or models use (prompts for helper models, JSON templates).
 - Every skill is in the skill table of `README.md` **(checked)**.
+- A sub-skill is a folder below the skill with its own `SKILL.md` (see `structure.md`, `set`). Its
+  front matter has a `name` equal to its folder name and a description that says when to use it
+  **(checked)**.
 
 ## Front matter
 

@@ -37,6 +37,7 @@ let
         path = ../test/nix/extra-skill;
         repos = [ "*" ];
         triggers.errors = [ "command not found" ];
+        subskills.storage.triggers.paths = [ "infra/**" ];
       };
     };
     semantic.url = "http://localhost:8097";
@@ -63,9 +64,11 @@ in
         test -f "$homeFiles/$agent/extensions/repo-skills/index.ts"
         test ! -e "$homeFiles/$agent/extensions/repo-skills/index.test.ts"
         jq -e --arg path "${packages.skills}/repo-scaffold" \
-          '.skills."repo-scaffold" == { path: $path, repos: ["Patrick-Kappen/*"], triggers: { paths: [], extensions: [], errors: [] } }' \
+          '.skills."repo-scaffold" == { path: $path, repos: ["Patrick-Kappen/*"], triggers: { paths: [], extensions: [], errors: [] }, subskills: {} }' \
           "$homeFiles/$agent/repo-skills.json"
         jq -e '.skills.git.repos == ["*"] and (.skills | has("test-speed")) and (.skills | has("skill-review") | not)' \
+          "$homeFiles/$agent/repo-skills.json"
+        jq -e '.skills.extra.subskills.storage.triggers.paths == ["infra/**"] and .skills.git.subskills == {}' \
           "$homeFiles/$agent/repo-skills.json"
         jq -e '.skills.extra.triggers.errors == ["command not found"] and .semantic.url == "http://localhost:8097" and .semantic.load == 0.9' \
           "$homeFiles/$agent/repo-skills.json"

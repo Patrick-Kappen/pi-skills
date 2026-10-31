@@ -77,6 +77,7 @@ you set its `repos` or `enable = false`.
 | `skills.<name>.repos` | `[ "*" ]` | Where the skill loads: `*`, `owner/repo`, `host/owner/repo`, `owner/*`, or a path such as `~/src/project`. See the [extension README](extensions/repo-skills/README.md#repos-entries). |
 | `skills.<name>.path` | the skill `<name>` of this flake | Directory with the skill's `SKILL.md`, for a skill from elsewhere. |
 | `skills.<name>.triggers.{paths,extensions,errors}` | `[ ]` | Files (globs, extensions) and tool errors (regular expressions) that load the skill by themselves. See [Triggers](extensions/repo-skills/README.md#triggers). |
+| `skills.<name>.subskills.<folder>.triggers` | `{ }` | The same, for a sub-skill: a folder in the skill with its own `SKILL.md`, hidden from the model and loaded only by score or trigger. See [Sub-skills](extensions/repo-skills/README.md#sub-skills). |
 | `semantic` | `null` | Embedding and rerank server that scores each prompt against the skills: `url`, plus `embedModel`, `rerankModel`, `load` (0.9), `hint` (0.5), `part` (0.8), `maxParts`, `candidates`, `timeoutMs`. See [Scoring the prompt](extensions/repo-skills/README.md#scoring-the-prompt). |
 | `package` | `packages.<system>.repo-skills` | The extension. |
 | `skillsPackage` | `packages.<system>.skills` | The skills of this flake. |

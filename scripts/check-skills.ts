@@ -34,7 +34,7 @@ export const MAX_SKILL_LINES = 300;
 export const SEMVER = /^\d+\.\d+\.\d+$/;
 const AGENT_FILES =
   /^(\.?AGENTS\.md|CLAUDE(\.local)?\.md|GEMINI\.md|\.cursorrules|\.windsurfrules|\.clinerules|\.claude|\.cursor|\.pi)$/;
-const RESOURCE_DIRS = ["guides", "references", "scripts", "templates", "assets", "prompts"];
+const RESOURCE_DIRS = ["guides", "references", "scripts", "templates", "assets", "prompts", "skills"];
 // Locations a skill must not depend on: it runs from the read-only Nix store, for any user.
 const FORBIDDEN_PATHS: Array<[RegExp, string]> = [
   [
@@ -171,6 +171,24 @@ function checkMarkdown(path: string, dir: string, rel: string, add: (message: st
   }
 }
 
+/** A sub-skill (a SKILL.md below the skill): found only by its description, so that must be right. */
+function checkSubskill(path: string, add: (message: string) => void): void {
+  const fm = parseFrontmatter(readFileSync(path, "utf8"));
+  if (typeof fm === "string") {
+    add(fm);
+    return;
+  }
+  const folder = basename(dirname(path));
+  if (fm.fields.get("name") !== folder) add(`a sub-skill's name must equal its folder name "${folder}"`);
+  const description = fm.fields.get("description") ?? "";
+  if (description.length > MAX_DESCRIPTION) {
+    add(`description has ${description.length} characters; the maximum is ${MAX_DESCRIPTION}`);
+  }
+  if (!/\bUse (when|for|to|it|this)\b/i.test(description)) {
+    add('a sub-skill is found only by its description: say when to use it ("Use when …")');
+  }
+}
+
 function checkFiles(skill: string, dir: string, problems: Problem[]): void {
   for (const path of walk(dir)) {
     const rel = relative(dir, path);
@@ -181,6 +199,7 @@ function checkFiles(skill: string, dir: string, problems: Problem[]): void {
     if (statSync(path).isDirectory()) continue;
     // Libraries (lib.sh, lib-*.sh) are sourced by scripts, not run.
     if (rel.startsWith("scripts/") && !name.endsWith(".md") && !name.startsWith("lib")) checkScript(path, add);
+    if (name === "SKILL.md" && rel !== "SKILL.md") checkSubskill(path, add);
     if (name.endsWith(".md")) checkMarkdown(path, dir, rel, add);
   }
 }

@@ -167,6 +167,21 @@ describe("checkRepo", () => {
     ]);
   });
 
+  test("sub-skills: name equals the folder, description says when", () => {
+    const root = repo({
+      "skills/storage/SKILL.md":
+        "---\nname: storage\ndescription: Storage accounts. Use when adding one.\n---\n\nRead `../../SKILL.md` first.\n",
+      "skills/network/SKILL.md": `---\nname: net\ndescription: Networks ${"x".repeat(1100)}.\n---\n`,
+      "skills/broken/SKILL.md": "no front matter\n",
+    });
+    expect(messages(root)).toEqual([
+      "skills/broken/SKILL.md: SKILL.md must start with a front matter block (---)",
+      'skills/network/SKILL.md: a sub-skill\'s name must equal its folder name "network"',
+      "skills/network/SKILL.md: description has 1110 characters; the maximum is 1024",
+      'skills/network/SKILL.md: a sub-skill is found only by its description: say when to use it ("Use when …")',
+    ]);
+  });
+
   test("agent directories inside a skill", () => {
     const root = repo();
     mkdirSync(join(root, "skills/demo/.claude"));

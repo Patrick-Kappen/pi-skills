@@ -42,6 +42,12 @@ beforeAll(() => {
     join(local, "SKILL.md"),
     "---\nname: local-skill\ndescription: A skill for one directory.\n---\n\nBody.\n",
   );
+  // A sub-skill: pi must not list it; only repo-skills loads it.
+  mkdirSync(join(local, "skills", "hidden"), { recursive: true });
+  writeFileSync(
+    join(local, "skills", "hidden", "SKILL.md"),
+    "---\nname: hidden\ndescription: A sub-skill. Use when testing.\n---\n\nHidden.\n",
+  );
   writeFileSync(
     join(agentDir, "repo-skills.json"),
     JSON.stringify({

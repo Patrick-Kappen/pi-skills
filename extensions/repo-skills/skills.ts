@@ -1,6 +1,6 @@
-import { readdirSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
-import type { SkillEntry, Triggers } from "./config.ts";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { basename, join, relative } from "node:path";
+import { NO_TRIGGERS, type SkillEntry, type Triggers } from "./config.ts";
 
 /** Directories of a skill that hold no parts for the agent: prompt templates, files for other repositories. */
 const NOT_PARTS = new Set(["prompts", "templates", "assets", "scripts", "node_modules"]);
@@ -20,6 +20,7 @@ export interface SkillPart {
 
 /** A skill as the triggers use it. */
 export interface LoadedSkill {
+  /** The skill's name; for a sub-skill `<main>/<directory>`. */
   name: string;
   description: string;
   disableModelInvocation: boolean;
@@ -28,6 +29,8 @@ export interface LoadedSkill {
   body: string;
   parts: SkillPart[];
   triggers: Triggers;
+  /** For a sub-skill: the skill whose folder holds it. pi does not know sub-skills; only this extension loads them. */
+  parent?: { name: string; filePath: string };
 }
 
 function parseFrontmatterField(
@@ -84,42 +87,73 @@ export function splitFrontmatter(content: string): { fields: Record<string, stri
   return { fields, body: text.slice(match[0].length) };
 }
 
-function markdownFiles(dir: string, base: string): string[] {
-  const files: string[] = [];
+/**
+ * The Markdown parts of a skill directory, and the directories below it that hold their own SKILL.md:
+ * those are sub-skills, with their own parts. pi treats a directory with a SKILL.md as one skill and
+ * does not look further, so it never sees sub-skills.
+ */
+function scan(dir: string, base: string): { parts: string[]; subskills: string[] } {
+  const parts: string[] = [];
+  const subskills: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (!NOT_PARTS.has(entry.name) && !entry.name.startsWith(".")) files.push(...markdownFiles(path, base));
+      if (NOT_PARTS.has(entry.name) || entry.name.startsWith(".")) continue;
+      if (existsSync(join(path, "SKILL.md"))) {
+        subskills.push(path);
+        continue;
+      }
+      const inner = scan(path, base);
+      parts.push(...inner.parts);
+      subskills.push(...inner.subskills);
     } else if (entry.name.endsWith(".md") && path !== join(base, "SKILL.md")) {
-      files.push(path);
+      parts.push(path);
     }
   }
-  return files;
+  return { parts, subskills };
 }
 
-/** Read a configured skill. Returns undefined when its SKILL.md cannot be read. */
-export function readSkill(entry: SkillEntry): LoadedSkill | undefined {
-  const filePath = join(entry.path, "SKILL.md");
+function readSkillDir(
+  dir: string,
+  fallbackName: string,
+  triggersOf: (name: string) => Triggers,
+  parent?: LoadedSkill,
+): LoadedSkill[] {
+  const filePath = join(dir, "SKILL.md");
   let content: string;
   try {
     content = readFileSync(filePath, "utf8");
   } catch {
-    return undefined;
+    return [];
   }
   const { fields, body } = splitFrontmatter(content);
-  return {
-    name: fields.name || entry.name,
+  const top = parent?.parent ? { name: parent.parent.name, filePath: parent.parent.filePath } : parent;
+  const name = top ? `${top.name}/${basename(dir)}` : fields.name || fallbackName;
+  const { parts, subskills } = scan(dir, dir);
+  const skill: LoadedSkill = {
+    name,
     description: (fields.description ?? "").trim(),
-    disableModelInvocation: fields["disable-model-invocation"] === "true",
+    // A sub-skill is hidden from the model anyway; it loads by score or trigger.
+    disableModelInvocation: !top && fields["disable-model-invocation"] === "true",
     filePath,
-    baseDir: entry.path,
+    baseDir: dir,
     body: body.trim(),
-    parts: markdownFiles(entry.path, entry.path).map((path) => ({
-      path: relative(entry.path, path).split("\\").join("/"),
-      text: readFileSync(path, "utf8"),
-    })),
-    triggers: entry.triggers,
+    parts: parts.map((path) => ({ path: relative(dir, path).split("\\").join("/"), text: readFileSync(path, "utf8") })),
+    triggers: triggersOf(top ? basename(dir) : ""),
+    ...(top ? { parent: { name: top.name, filePath: top.filePath } } : {}),
   };
+  // Sub-skills of sub-skills belong to the main skill too: they link back to its rules.
+  return [skill, ...subskills.flatMap((sub) => readSkillDir(sub, basename(sub), triggersOf, skill))];
+}
+
+/**
+ * Read a configured skill and its sub-skills: the main skill first. Returns an empty list when its
+ * SKILL.md cannot be read.
+ */
+export function readSkillSet(entry: SkillEntry): LoadedSkill[] {
+  return readSkillDir(entry.path, entry.name, (sub) =>
+    sub === "" ? entry.triggers : (entry.subskills[sub]?.triggers ?? NO_TRIGGERS),
+  );
 }
 
 /** True when the description says when to use the skill, which the model routes on. */
@@ -145,6 +179,11 @@ export function skillBlock(skill: LoadedSkill, parts: readonly SkillPart[] = [])
   const lines = [
     `${skillMarker(skill.name)} location="${skill.filePath}">`,
     `References are relative to ${skill.baseDir}.`,
+    ...(skill.parent
+      ? [
+          `Part of the skill ${skill.parent.name} (${skill.parent.filePath}): its rules apply here. Read it first if it is not in this conversation.`,
+        ]
+      : []),
     "",
     skill.body,
   ];
