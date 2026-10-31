@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.4.0...v0.5.0) (2026-10-31)
+
+
+### Features
+
+* **git:** start every change from a fresh base, also stacked on a local worktree ([#15](https://github.com/Patrick-Kappen/pi-skills/issues/15)) ([1a24810](https://github.com/Patrick-Kappen/pi-skills/commit/1a248102c23c921421ff0da4ebdb6be90b079c43))
+
 ## [0.4.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.3.0...v0.4.0) (2026-10-31)
 
 
