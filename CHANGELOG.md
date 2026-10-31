@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.10.0...v0.11.0) (2026-10-31)
+
+
+### Features
+
+* **repo-skills:** hidden sub-skills inside a skill, loaded by score or trigger ([#29](https://github.com/Patrick-Kappen/pi-skills/issues/29)) ([41ed8b0](https://github.com/Patrick-Kappen/pi-skills/commit/41ed8b0163591c9fa378ca76a5a79245565f44a9))
+
 ## [0.10.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.9.0...v0.10.0) (2026-10-31)
 
 
