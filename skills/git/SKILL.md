@@ -44,6 +44,9 @@ change and get a short result back. Details: `references/pi-git.md`.
 
 | Tool | Use it to | Instead of |
 |---|---|---|
+| `git_start` | Start a change: worktree, branch, setup, and the repository's facts | `git worktree add`, `devenv shell`, looking around |
+| `git_status` | See all open work: watched PRs, what needs the user, worktrees | Listing worktrees and PRs by hand |
+| `git_watch` | Hand a PR made without `git_pr` to the watcher | Watching its CI yourself |
 | `git_check` | Run the repository's checks; a helper fixes failures | Running `check` and reading its output |
 | `git_commit` | Commit without pushing (an intermediate step) | `git add`, `git commit` |
 | `git_pr` | Commit, push, and open or update the PR | `git commit`, `git push`, `gh pr create` |
@@ -54,7 +57,7 @@ change and get a short result back. Details: `references/pi-git.md`.
   other work, or end your turn.
 - **A locked step is not an error to work around.** Finish what you may, then call `git_request`
   with what you need and why, and stop. The user unlocks with `/git unlock <step>`.
-- Starting the worktree and making the change is still your job.
+- Without `git_start`, starting the worktree is still your job (`references/worktrees.md`).
 
 ## Workflow
 

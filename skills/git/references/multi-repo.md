@@ -8,7 +8,7 @@ For example: one workflow fix in every repository of an owner, or a dependency b
 2. **Compare first.** Read the file in each repository (`gh api repos/<o>/<r>/contents/<path>`). When
    they are identical, one edit fits all; when they differ, note each difference before editing.
 3. **Plan once.** Show the user the set, the change and the exceptions; one yes covers the set.
-4. **Per repository**, the normal workflow: a worktree from a fresh default branch, the change, the
+4. **Per repository**, the normal workflow (with pi-git: `git_start`, the change, `git_pr`): a worktree from a fresh default branch, the change, the
    checks, a PR. Same branch name and commit message everywhere, so the PRs are easy to find
    (`gh search prs --owner <owner> head:<branch>`). Mention the related PRs in each body.
    With pi-git: `git_pr` per worktree; the watcher follows them all.

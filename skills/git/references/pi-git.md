@@ -6,6 +6,11 @@ needs you.
 
 ## Which tool
 
+- **Start:** `git_start` with the repository, a topic and a type (and `base` for a stacked change).
+  It returns the worktree path and what to know first; make the change there.
+- **What is open:** `git_status`. Use it before asking the user what is in progress.
+- **A PR made by hand, or by someone else, that should be followed:** `git_watch` with its number.
+
 - **Checks during the work:** `git_check`. Green: "Checks passed" and what the helper fixed. Red: a
   summary of at most 15 lines. Never read hook or CI output yourself when this tool exists. It
   changes files but never stages or commits.
