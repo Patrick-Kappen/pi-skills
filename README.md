@@ -11,6 +11,8 @@ in the repositories you list. It works like `repo-mcp` in
 |---|---|
 | [`repo-scaffold`](skills/repo-scaffold/SKILL.md) | Scaffolds a new repository: devenv, hooks, checks, flake, GitHub CI/CD and releases. Prompt: `/repo-scaffold`. |
 | [`git`](skills/git/SKILL.md) | How to work with git and GitHub: worktrees in `~/.worktrees/<repo>/<topic>`, commits, PRs, CI, conflicts, stacked PRs, cleanup. Used by the agent, and by the helper of [pi-git](https://github.com/Patrick-Kappen/pi-git). |
+| [`skill-create`](skills/skill-create/SKILL.md) | Creates a new skill (or imports one) in this repository: intake, design, a scaffold script, the repository rules and best practices, checks, and a PR. Prompt: `/skill-create`. |
+| [`skill-review`](skills/skill-review/SKILL.md) | Improves a skill from evidence: finds the sessions that used it, lets a cheap model (`gpt-6-luna`) analyse them, and turns the report into approved changes and a PR. Prompt: `/skill-review`. |
 
 ## Use with Home Manager
 
@@ -59,14 +61,24 @@ configuration, run `/reload` in pi.
 When you move a skill here, remove the copy from `~/.pi/agent/skills` (and its prompt from
 `~/.pi/agent/prompts`). Otherwise pi loads both.
 
-## Adding a skill
+## Adding or changing a skill
 
-1. Add `skills/<name>/SKILL.md`, with `name: <name>` in the front matter, plus any files it needs.
+Use the skills for it: `/skill-create` for a new skill (or to import one from elsewhere), and
+`/skill-review <skill>` to improve one from how it was used in past sessions. Both work in a
+worktree of this repository and end with a PR.
+
+The rules are in [`skills/skill-create/references/rules.md`](skills/skill-create/references/rules.md).
+`node scripts/check-skills.ts .` checks most of them; `lint`, the pre-commit hook and CI run it. In
+short:
+
+1. `skills/<name>/SKILL.md` with `name`, a `description` that says when to use the skill, and
+   `metadata.version`; a row in the skill table above.
 2. Prompt templates that belong to the skill go into `skills/<name>/prompts/`. They load together
    with the skill.
 3. Refer to the skill's own files by paths relative to its `SKILL.md`. The skill runs from the
    read-only Nix store, not from `~/.pi/agent/skills`.
-4. Files in `skills/*/templates/` are templates for other repositories. The linters of this
+4. Scripts in `skills/<name>/scripts/`, executable; their tests in `test/skills/<name>/`.
+5. Files in `skills/*/templates/` are templates for other repositories. The linters of this
    repository skip them.
 
 ## Layout
@@ -74,6 +86,8 @@ When you move a skill here, remove the copy from `~/.pi/agent/skills` (and its p
 | Path | Contains |
 |---|---|
 | `skills/<name>/` | The skills |
+| `scripts/check-skills.ts` | Checks every skill against the repository rules |
+| `test/skills/<name>/` | Tests of the scripts of a skill |
 | `extensions/repo-skills/` | The extension, with unit tests |
 | `test/integration/` | Loads the extension and a skill with pi's own loader, in a repository and a worktree |
 | `nix/package.nix`, `nix/skills.nix` | The packages `repo-skills` and `skills` |

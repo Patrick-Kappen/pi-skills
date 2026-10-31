@@ -5,7 +5,12 @@ export default defineConfig({
     // Hooks run inside git; its variables would point git calls in tests at this repository.
     env: { GIT_DIR: "", GIT_INDEX_FILE: "", GIT_WORK_TREE: "" },
     projects: [
-      { test: { name: "unit", include: ["extensions/**/*.test.ts"] } },
+      {
+        test: {
+          name: "unit",
+          include: ["extensions/**/*.test.ts", "test/scripts/**/*.test.ts", "test/skills/**/*.test.ts"],
+        },
+      },
       {
         test: {
           name: "integration",
@@ -19,7 +24,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
-      include: ["extensions/**/*.ts"],
+      include: ["extensions/**/*.ts", "scripts/**/*.ts", "skills/*/scripts/**/*.ts"],
       exclude: ["**/*.test.ts"],
       reporter: ["text", "json-summary", "lcov"],
       thresholds: { lines: 95, functions: 95, branches: 90, statements: 95 },
