@@ -26,8 +26,10 @@ needs you.
   updates the PR.
 - **Something only the user can give:** `git_request`, then stop your turn.
 
-Write a good intent: it is the basis of the commit message and the PR. One or two sentences on the
-goal and the reason, not a list of files.
+Give a `title` and a good intent. The title is the commit subject and PR title in the repository's
+style (`commits.md`, `git_start` shows recent subjects); the intent is the body: the goal and the
+reason in a few sentences, not a list of files. With a title, pi-git commits and opens the PR
+itself and no helper starts; without one, a helper writes them, which costs time and tokens.
 
 ## After `git_pr`
 
