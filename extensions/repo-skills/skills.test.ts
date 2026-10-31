@@ -1,7 +1,7 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test } from "vitest";
 import { NO_TRIGGERS } from "./config.ts";
 import {
   type LoadedSkill,
@@ -14,6 +14,8 @@ import {
 } from "./skills.ts";
 
 const root = mkdtempSync(join(tmpdir(), "repo-skills-skills-"));
+
+afterAll(() => rmSync(root, { recursive: true, force: true }));
 
 function write(path: string, text: string): void {
   mkdirSync(join(path, ".."), { recursive: true });

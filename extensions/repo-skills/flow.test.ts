@@ -1,7 +1,7 @@
-import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { beforeAll, describe, expect, test, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { NO_TRIGGERS, SEMANTIC_DEFAULTS } from "./config.ts";
 import {
   createRepoSkills,
@@ -58,6 +58,8 @@ function writeConfig(file: string, semantic: boolean): void {
     }),
   );
 }
+
+afterAll(() => rmSync(root, { recursive: true, force: true }));
 
 beforeAll(() => {
   mkdirSync(work, { recursive: true });
