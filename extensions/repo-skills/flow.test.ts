@@ -153,29 +153,44 @@ describe("input", () => {
     expect(ext.appendEntry).toHaveBeenCalledWith(SCORE_ENTRY, expect.objectContaining({ decision: "load" }));
   });
 
-  test("a skill still in context gets a note instead, and keeps the images", async () => {
+  /** The hidden message before_agent_start adds for the last prompt. */
+  const noteOf = (ext: ReturnType<typeof setup>, messageType = "user") =>
+    (ext.fire("before_agent_start", { messageType }) as { message?: { content: string; display: boolean } } | undefined)
+      ?.message;
+
+  test("a skill still in context gets a hidden note, and the prompt stays as it is", async () => {
     const ext = setup();
     ext.setEntries([user('<skill name="git" location="x">\n</skill>')]);
-    const images = [{ type: "image", data: "", mimeType: "image/png" }];
-    const result = (await ext.fire("input", { text: "git rebase again", source: "interactive", images })) as {
-      text: string;
-      images: unknown;
-    };
-    expect(result.text).toContain("git rebase again\n\n<system>The skill git is still in this conversation above.");
-    expect(result.text).not.toContain("<skill name=");
-    expect(result.images).toBe(images);
+    expect(await ext.input("git rebase again")).toEqual({ action: "continue" });
+    const message = noteOf(ext);
+    expect(message?.display).toBe(false);
+    expect(message?.content).toContain("<system>The skill git is still in this conversation above.");
+    // The note belongs to one run.
+    expect(noteOf(ext)).toBeUndefined();
   });
 
-  test("a medium score gives a hint", async () => {
-    const result = await setup().input("maybe something");
-    expect(result.text).toContain("<system>The skill git probably applies");
+  test("a medium score gives a soft hint", async () => {
+    const ext = setup();
+    expect(await ext.input("maybe something")).toEqual({ action: "continue" });
+    expect(noteOf(ext)?.content).toContain("<system>The skill git may apply to this request. If the task matches");
   });
 
   test("a run-only-on-request skill is suggested", async () => {
     const ext = setup();
-    const result = await ext.input("scaffold a repo");
-    expect(result.text).toContain("Suggest /skill:scaffold to the user");
+    await ext.input("scaffold a repo");
+    expect(noteOf(ext)?.content).toContain("Suggest /skill:scaffold to the user");
     expect(ext.notify).toHaveBeenCalledWith("repo-skills: /skill:scaffold may help (0.95)", "info");
+  });
+
+  test("no note for a run a custom message started, for a message sent while running, or for a new prompt", async () => {
+    const ext = setup();
+    await ext.input("maybe something");
+    expect(noteOf(ext, "custom")).toBeUndefined();
+    await ext.fire("input", { text: "maybe something", source: "interactive", streamingBehavior: "steer" });
+    expect(noteOf(ext)).toBeUndefined();
+    await ext.input("maybe something");
+    await ext.input("down");
+    expect(noteOf(ext)).toBeUndefined();
   });
 
   test.each(["down", "broken", "/skill:git", "/reload"])("%s goes on unchanged", async (text) => {
@@ -366,8 +381,10 @@ describe("decide and note", () => {
 
   test("notes name the parts", () => {
     const parts = [{ path: "references/a.md", text: "" }];
-    expect(note({ kind: "hint", skill, parts, score: 0.6 })).toContain("then references/a.md next to it.");
-    expect(note({ kind: "hint", skill, parts: [], score: 0.6 })).toContain("change anything.</system>");
+    expect(note({ kind: "hint", skill, parts, score: 0.6 })).toContain("then references/a.md next to it; otherwise");
+    expect(note({ kind: "hint", skill, parts: [], score: 0.6 })).toContain(
+      "SKILL.md; otherwise ignore this note.</system>",
+    );
     expect(note({ kind: "loaded", skill, parts, score: 0.6 })).toContain(
       "Its parts for this request: references/a.md.",
     );

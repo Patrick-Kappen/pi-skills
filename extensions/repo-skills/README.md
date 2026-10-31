@@ -121,10 +121,15 @@ user message before it.
 | Score | Skill state | What happens |
 |---|---|---|
 | ≥ `load` (0.9) | not in context | The skill goes before the prompt, with up to `maxParts` parts that score ≥ `part` (0.8). |
-| ≥ `hint` (0.5) | not in context | A note after the prompt: `<system>The skill X probably applies … Read …/SKILL.md …</system>`, naming the parts. |
-| ≥ `hint` | still in context | A note only: `<system>The skill X is still in this conversation above. Follow it; do not read its SKILL.md again.</system>` |
+| ≥ `hint` (0.5) | not in context | A note: `<system>The skill X may apply to this request. If the task matches its description, read …/SKILL.md …; otherwise ignore this note.</system>`, naming the parts. |
+| ≥ `hint` | still in context | A note: `<system>The skill X is still in this conversation above. Follow it; do not read its SKILL.md again.</system>` |
 | ≥ `hint` | `disable-model-invocation` | A note that tells the agent to suggest `/skill:X` to the user, and a notification. The skill does not run by itself. |
 | below `hint` | | Nothing. |
+
+Notes do not change the prompt: they go to the model as a hidden message (`repo-skills-note`,
+`display: false`) at the start of the run, so the user does not see them. A message sent while the
+agent is running gets no note. A loaded skill does go before the prompt; pi shows it as a collapsed
+skill block.
 
 When the server does not answer within `timeoutMs`, the prompt goes on unchanged. Each scoring is
 stored in the session as a `repo-skills-score` entry (not sent to the model), so the thresholds can
@@ -148,8 +153,9 @@ codemode script are not checked.
 
 ### In context
 
-A skill counts as in context when a skill block of it (from `/skill:name` or this extension) or a
-read of its `SKILL.md` is in the part of the session the model sees. After a compaction summarized it
+A skill counts as in context when a skill block of it (from `/skill:name` or this extension), or a
+read of its `SKILL.md` that returned without an error, is in the part of the session the model sees.
+A read that is still running does not count, so the first read of a skill is never refused. After a compaction summarized it
 away, it loads again. While it is in context, the extension does not load it again, and refuses a
 second read of its `SKILL.md`.
 
