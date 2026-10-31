@@ -15,6 +15,7 @@ everywhere by default, or only in the repositories you list. It works like `repo
 | [`skill-create`](skills/skill-create/SKILL.md) | Creates a new skill (or imports one) in this repository: intake, design, a scaffold script, the repository rules and best practices, checks, and a PR. Prompt: `/skill-create`. |
 | [`skill-review`](skills/skill-review/SKILL.md) | Improves a skill from evidence: finds the sessions that used it, lets a cheap model (`gpt-6-luna`) analyse them, and turns the report into approved changes and a PR. Lessons that hold beyond the skill go into a learnings log, then into the skill rules of `skill-create` (from a second skill on), or into [pi-rules](https://github.com/Patrick-Kappen/pi-rules). Prompt: `/skill-review`. |
 | [`test-speed`](skills/test-speed/SKILL.md) | Makes the tests of a repository fast and keeps new ones fast: times every test file, finds repeated process starts, adds a parallel runner, a `test-changed` run from the git diff, and the recipes `just test`, `just test-changed` and `just test-serial` on top of devenv. Scripts for timing, comparing and setup; templates for Pester. Prompt: `/test-speed`. |
+| [`nixos`](skills/nixos/SKILL.md) | Fixes "command not found", missing libraries and headers, binaries that will not start and pip errors the NixOS way: finds the package with `nix-locate` (script), runs it once with `nix shell`, or adds it to the repository's devenv. Best loaded by error triggers (see below). |
 
 ## Use with Home Manager
 
@@ -38,7 +39,25 @@ everywhere by default, or only in the repositories you list. It works like `repo
     semantic.url = "http://localhost:8097";                 # score prompts; optional
     # Every skill of this flake loads everywhere; configure only what differs.
     skills = {
+      repo-scaffold.repos = [ "*" ];                        # everywhere
+      git.repos = [ "*" ];
       # repo-scaffold.enable = false;                       # turn a skill off
+      nixos = {
+        repos = [ "*" ];
+        # Load it when a tool prints one of these errors.
+        triggers.errors = [
+          "command not found"
+          "/usr/bin/env: .*No such file or directory"
+          "bad interpreter"
+          "error while loading shared libraries"
+          "Could not start dynamically linked executable"
+          "No module named"
+          "externally-managed-environment"
+          "fatal error: [^ ]+\\.h: No such file"
+          "was not found in the pkg-config search path"
+          "cannot find -l"
+        ];
+      };
       # terraform.repos = [ "my-org/infra" "my-org/*" ];   # in these repositories
       # notes.repos = [ "~/private/notes" ];               # in this directory
       # my-own.path = ./skills/my-own;                     # a skill from elsewhere, everywhere
