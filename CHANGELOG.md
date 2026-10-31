@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.1.0...v0.2.0) (2026-10-31)
+
+
+### Features
+
+* **git:** skill for git and GitHub work ([#7](https://github.com/Patrick-Kappen/pi-skills/issues/7)) ([429f398](https://github.com/Patrick-Kappen/pi-skills/commit/429f398b72e573ebcbe759402e25ccfc846575c4))
+
+
+### Bug Fixes
+
+* **deps:** override minimatch to ^11.0.1 for GHSA-g3hv-75wg-m249 ([#6](https://github.com/Patrick-Kappen/pi-skills/issues/6)) ([f3ff241](https://github.com/Patrick-Kappen/pi-skills/commit/f3ff24105e73b8911cc8b89025955a2389d61ad7))
+
+
+### Documentation
+
+* license under MIT ([#5](https://github.com/Patrick-Kappen/pi-skills/issues/5)) ([1e89487](https://github.com/Patrick-Kappen/pi-skills/commit/1e8948762885ab3b6c263003fb82bb05d5f4b4e2))
+
 ## 0.1.0 (2026-10-30)
 
 
