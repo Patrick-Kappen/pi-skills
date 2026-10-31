@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/Patrick-Kappen/pi-skills/compare/v0.11.0...v0.11.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **repo-skills:** never refuse the first read of a skill, and hide notes from the user ([#31](https://github.com/Patrick-Kappen/pi-skills/issues/31)) ([009260d](https://github.com/Patrick-Kappen/pi-skills/commit/009260d22a6c5c9be6fa178f0f858a2f883495f2))
+
 ## [0.11.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.10.0...v0.11.0) (2026-10-31)
 
 
