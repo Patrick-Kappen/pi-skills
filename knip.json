@@ -1,7 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["extensions/*/index.ts", "test/nix/home-manager-smoke.ts"],
-  "project": ["extensions/**/*.ts", "test/**/*.ts"],
+  "entry": [
+    "extensions/*/index.ts",
+    "test/nix/home-manager-smoke.ts",
+    "scripts/check-skills.ts",
+    "skills/*/scripts/*.ts"
+  ],
+  "project": ["extensions/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "skills/*/scripts/**/*.ts"],
   "ignoreBinaries": ["biome"],
   "ignoreExportsUsedInFile": true
 }

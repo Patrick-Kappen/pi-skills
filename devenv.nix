@@ -63,6 +63,7 @@ in
       lint.exec = ''
         set -euo pipefail
         lint-language
+        node scripts/check-skills.ts .
         typos
         markdownlint-cli2 "**/*.md"
         # skills/*/templates/ holds templates with @PLACEHOLDERS@, not Nix code of this repository.
@@ -154,6 +155,13 @@ in
         };
 
         typos.enable = true;
+        check-skills = {
+          enable = true;
+          name = "check-skills: the skill rules";
+          entry = "${hookScript "check-skills" [ pkgs.nodejs_24 ] "exec node scripts/check-skills.ts ."}";
+          files = "^(skills/|README\\.md$|scripts/check-skills\\.ts$)";
+          pass_filenames = false;
+        };
         markdownlint-cli2 = {
           enable = true;
           name = "markdownlint-cli2";
