@@ -49,6 +49,7 @@ change and get a short result back. Details: `references/pi-git.md`.
 | `git_watch` | Hand a PR made without `git_pr` to the watcher | Watching its CI yourself |
 | `git_check` | Run the repository's checks; a helper fixes failures | Running `check` and reading its output |
 | `git_commit` | Commit without pushing (an intermediate step) | `git add`, `git commit` |
+| `git_push` | Push the commits without a PR; checks run, a helper fixes failures | `git push` |
 | `git_pr` | Commit, push, and open or update the PR | `git commit`, `git push`, `gh pr create` |
 | `git_request` | Ask the user for a locked step or a decision, then stop | Working around a lock |
 
@@ -56,7 +57,8 @@ change and get a short result back. Details: `references/pi-git.md`.
   up after the merge, and sends you a summary. No `gh pr checks --watch`, no polling; continue with
   other work, or end your turn.
 - **A locked step is not an error to work around.** Finish what you may, then call `git_request`
-  with what you need and why, and stop. The user unlocks with `/git unlock <step>`.
+  with what you need and why, and stop. The user unlocks with `/git unlock <step>`, or runs the step
+  once with `/git <step>`.
 - Without `git_start`, starting the worktree is still your job (`references/worktrees.md`).
 
 ## Workflow

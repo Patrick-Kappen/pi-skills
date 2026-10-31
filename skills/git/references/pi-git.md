@@ -16,6 +16,9 @@ needs you.
   changes files but never stages or commits.
 - **An intermediate commit:** `git_commit` with the intent. Stages everything, runs pre-commit,
   writes the message in the repository's style, commits. No push.
+- **Only a push:** `git_push`. Runs the pre-push checks (the helper fixes failures, as a new commit
+  when committing is allowed) and pushes; uncommitted changes stay. Use it when the PR comes later or
+  someone else opens it.
 - **The PR:** `git_pr` with the intent (what the change is for and why) and, for a stacked change,
   `base`. It refuses the main checkout and the default branch. A second call on the same branch
   updates the PR.
