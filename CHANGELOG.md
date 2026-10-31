@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.5.0...v0.6.0) (2026-10-31)
+
+
+### Features
+
+* **git:** pass titles to commit and PR tools ([#17](https://github.com/Patrick-Kappen/pi-skills/issues/17)) ([d2f70ba](https://github.com/Patrick-Kappen/pi-skills/commit/d2f70ba1a7f70dc9cf84851c8b076cebf35d579a))
+
 ## [0.5.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.4.0...v0.5.0) (2026-10-31)
 
 
