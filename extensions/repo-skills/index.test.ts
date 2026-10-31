@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ResourcesDiscoverEvent } from "@earendil-works/pi-coding-agent";
 import { beforeAll, describe, expect, test, vi } from "vitest";
+import { NO_TRIGGERS } from "./config.ts";
 import { createRepoSkills, type RepoSkillsApi, resourcePaths } from "./index.ts";
 
 const root = realpathSync(mkdtempSync(join(tmpdir(), "repo-skills-")));
@@ -133,7 +134,9 @@ describe("/repo-skills", () => {
 describe("resourcePaths", () => {
   test("skips a skill without SKILL.md", () => {
     expect(
-      resourcePaths([{ pattern: "*", skill: { name: "x", path: join(root, "nope"), repos: ["*"] } }]).errors,
+      resourcePaths([
+        { pattern: "*", skill: { name: "x", path: join(root, "nope"), repos: ["*"], triggers: NO_TRIGGERS } },
+      ]).errors,
     ).toHaveLength(1);
   });
 });

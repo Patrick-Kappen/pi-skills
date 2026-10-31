@@ -5,16 +5,62 @@ import { expandHome } from "./match.ts";
 
 export const CONFIG_FILE = "repo-skills.json";
 
-/** One skill: its directory (with SKILL.md) and where it loads. */
+/** Fixed triggers: the skill loads when a tool touches a matching file or prints a matching error. */
+export interface Triggers {
+  /** Globs, relative to the repository root (or the working directory outside git), or absolute. */
+  paths: string[];
+  /** File extensions such as `.tf`. */
+  extensions: string[];
+  /** Regular expressions, case-insensitive, matched against tool output. */
+  errors: string[];
+}
+
+/** One skill: its directory (with SKILL.md), where it loads, and what loads it by itself. */
 export interface SkillEntry {
   name: string;
   path: string;
   repos: string[];
+  triggers: Triggers;
 }
+
+/** The embedding and rerank server that scores prompts against the skills. */
+export interface SemanticConfig {
+  /** Base URL of an OpenAI-compatible server with `/v1/embeddings` and `/v1/rerank`. */
+  url: string;
+  embedModel: string;
+  rerankModel: string;
+  /** Rerank score from which the skill is put into the prompt. */
+  load: number;
+  /** Rerank score from which the agent gets a hint that the skill may apply. */
+  hint: number;
+  /** Rerank score from which a part of a loaded skill is added. */
+  part: number;
+  /** At most this many parts are added. */
+  maxParts: number;
+  /** How many skills and parts the embedding step passes to the reranker. */
+  candidates: number;
+  /** Time limit for one prompt; on timeout the prompt goes on without skills. */
+  timeoutMs: number;
+}
+
+export const SEMANTIC_DEFAULTS: Omit<SemanticConfig, "url"> = {
+  embedModel: "qwen3-embedding-0.6b",
+  rerankModel: "qwen3-reranker-4b",
+  load: 0.9,
+  hint: 0.5,
+  part: 0.8,
+  maxParts: 2,
+  candidates: 8,
+  timeoutMs: 3000,
+};
+
+export const NO_TRIGGERS: Triggers = { paths: [], extensions: [], errors: [] };
 
 export interface LoadedConfig {
   path: string;
   skills: SkillEntry[];
+  /** Absent: no scoring, only the fixed triggers. */
+  semantic?: SemanticConfig;
   /** Problems with the file or with single entries. Valid entries are still loaded. */
   errors: string[];
 }
@@ -41,9 +87,95 @@ function isRepoList(value: unknown): value is string[] {
   );
 }
 
+function isStringList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string" && item.trim() !== "");
+}
+
+function parseTriggers(raw: unknown, where: string, errors: string[]): Triggers {
+  if (raw === undefined) return NO_TRIGGERS;
+  if (!isRecord(raw)) {
+    errors.push(`${where}: "triggers" must be an object`);
+    return NO_TRIGGERS;
+  }
+  const list = (key: keyof Triggers): string[] => {
+    const value = raw[key] ?? [];
+    if (isStringList(value)) return value.map((item) => item.trim());
+    errors.push(`${where}: "triggers.${key}" must be a list of strings`);
+    return [];
+  };
+  const triggers = { paths: list("paths"), extensions: list("extensions"), errors: list("errors") };
+  triggers.extensions = triggers.extensions.map((ext) => (ext.startsWith(".") ? ext : `.${ext}`));
+  triggers.errors = triggers.errors.filter((pattern) => {
+    try {
+      new RegExp(pattern, "i");
+      return true;
+    } catch {
+      errors.push(`${where}: "triggers.errors" has an invalid regular expression: ${pattern}`);
+      return false;
+    }
+  });
+  return triggers;
+}
+
+function parseSemanticNames(
+  raw: Record<string, unknown>,
+  semantic: SemanticConfig,
+  path: string,
+  errors: string[],
+): void {
+  for (const key of ["embedModel", "rerankModel"] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (typeof value === "string" && value !== "") semantic[key] = value;
+    else errors.push(`${path}: "semantic.${key}" must be a model name`);
+  }
+}
+
+function parseSemanticScores(
+  raw: Record<string, unknown>,
+  semantic: SemanticConfig,
+  path: string,
+  errors: string[],
+): void {
+  for (const key of ["load", "hint", "part"] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (typeof value === "number" && value >= 0 && value <= 1) semantic[key] = value;
+    else errors.push(`${path}: "semantic.${key}" must be a score from 0 to 1`);
+  }
+}
+
+function parseSemanticLimits(
+  raw: Record<string, unknown>,
+  semantic: SemanticConfig,
+  path: string,
+  errors: string[],
+): void {
+  for (const key of ["maxParts", "candidates", "timeoutMs"] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (typeof value === "number" && Number.isInteger(value) && value >= 0) semantic[key] = value;
+    else errors.push(`${path}: "semantic.${key}" must be a whole number`);
+  }
+}
+
+function parseSemantic(raw: unknown, path: string, errors: string[]): SemanticConfig | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (!isRecord(raw) || typeof raw.url !== "string" || !/^https?:\/\//.test(raw.url)) {
+    errors.push(`${path}: "semantic" needs "url": an http(s) URL`);
+    return undefined;
+  }
+  const semantic: SemanticConfig = { ...SEMANTIC_DEFAULTS, url: raw.url.replace(/\/+$/, "") };
+  parseSemanticNames(raw, semantic, path, errors);
+  parseSemanticScores(raw, semantic, path, errors);
+  parseSemanticLimits(raw, semantic, path, errors);
+  return semantic;
+}
+
 /**
  * Validate the parsed config file. The shape is
- * `{ "skills": { "<name>": { "path": "/dir/with/SKILL.md", "repos": ["owner/repo", "~/path", "*"] } } }`.
+ * `{ "semantic": { "url": "http://localhost:8097" }, "skills": { "<name>": { "path": "/dir/with/SKILL.md",
+ * "repos": ["owner/repo", "~/path", "*"], "triggers": { "paths": [], "extensions": [], "errors": [] } } } }`.
  */
 export function parseConfig(raw: unknown, path: string, home: string = homedir()): LoadedConfig {
   const result: LoadedConfig = { path, skills: [], errors: [] };
@@ -70,8 +202,15 @@ export function parseConfig(raw: unknown, path: string, home: string = homedir()
       result.errors.push(`${path}: skill "${name}" needs "repos": a non-empty list of repositories, paths or "*"`);
       continue;
     }
-    result.skills.push({ name, path: expandHome(dir, home), repos: repos.map((repo) => repo.trim()) });
+    result.skills.push({
+      name,
+      path: expandHome(dir, home),
+      repos: repos.map((repo) => repo.trim()),
+      triggers: parseTriggers(value.triggers, `${path}: skill "${name}"`, result.errors),
+    });
   }
+  const semantic = parseSemantic(raw.semantic, path, result.errors);
+  if (semantic) result.semantic = semantic;
   return result;
 }
 

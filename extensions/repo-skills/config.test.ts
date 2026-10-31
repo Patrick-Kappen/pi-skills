@@ -2,7 +2,7 @@ import { chmodSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { agentDir, configPath, loadConfig, parseConfig } from "./config.ts";
+import { agentDir, configPath, loadConfig, NO_TRIGGERS, parseConfig, SEMANTIC_DEFAULTS } from "./config.ts";
 
 const home = "/home/u";
 
@@ -27,8 +27,8 @@ describe("parseConfig", () => {
     );
     expect(config.errors).toEqual([]);
     expect(config.skills).toEqual([
-      { name: "a", path: "/home/u/skills/a", repos: ["o/r", "*"] },
-      { name: "b", path: "/s/b", repos: ["~/src"] },
+      { name: "a", path: "/home/u/skills/a", repos: ["o/r", "*"], triggers: NO_TRIGGERS },
+      { name: "b", path: "/s/b", repos: ["~/src"], triggers: NO_TRIGGERS },
     ]);
   });
 
@@ -64,6 +64,63 @@ describe("parseConfig", () => {
   });
 });
 
+describe("triggers", () => {
+  const parse = (triggers: unknown) =>
+    parseConfig({ skills: { a: { path: "/s/a", repos: ["*"], triggers } } }, "f", home);
+
+  test("valid, with extensions normalized", () => {
+    const config = parse({ paths: ["**/*.nix"], extensions: ["tf", ".hcl"], errors: ["command not found"] });
+    expect(config.errors).toEqual([]);
+    expect(config.skills[0]?.triggers).toEqual({
+      paths: ["**/*.nix"],
+      extensions: [".tf", ".hcl"],
+      errors: ["command not found"],
+    });
+  });
+
+  test("missing lists are empty", () => {
+    expect(parse({ paths: ["x"] }).skills[0]?.triggers).toEqual({ paths: ["x"], extensions: [], errors: [] });
+  });
+
+  test.each([
+    [[], '"triggers" must be an object'],
+    [{ paths: "x" }, '"triggers.paths" must be a list of strings'],
+    [{ errors: ["("] }, "invalid regular expression"],
+  ])("invalid %j is reported, the skill kept", (triggers, message) => {
+    const config = parse(triggers);
+    expect(config.skills).toHaveLength(1);
+    expect(config.errors[0]).toContain(message);
+  });
+});
+
+describe("semantic", () => {
+  test("defaults, trailing slash removed", () => {
+    expect(parseConfig({ semantic: { url: "http://h:1/" } }, "f", home).semantic).toEqual({
+      ...SEMANTIC_DEFAULTS,
+      url: "http://h:1",
+    });
+  });
+
+  test("overrides", () => {
+    const semantic = { url: "https://h", embedModel: "e", rerankModel: "r", load: 0.8, hint: 0.4, part: 0.7 };
+    const config = parseConfig({ semantic: { ...semantic, maxParts: 1, candidates: 0, timeoutMs: 500 } }, "f", home);
+    expect(config.errors).toEqual([]);
+    expect(config.semantic).toEqual({ ...semantic, maxParts: 1, candidates: 0, timeoutMs: 500 });
+  });
+
+  test("absent or null is off", () => {
+    expect(parseConfig({}, "f", home).semantic).toBeUndefined();
+    expect(parseConfig({ semantic: null }, "f", home).semantic).toBeUndefined();
+  });
+
+  test("invalid values are reported", () => {
+    expect(parseConfig({ semantic: { url: "localhost" } }, "f", home).errors[0]).toContain('needs "url"');
+    const config = parseConfig({ semantic: { url: "http://h", embedModel: "", load: 2, maxParts: 1.5 } }, "f", home);
+    expect(config.errors).toHaveLength(3);
+    expect(config.semantic).toEqual({ ...SEMANTIC_DEFAULTS, url: "http://h" });
+  });
+});
+
 describe("loadConfig", () => {
   const dir = mkdtempSync(join(tmpdir(), "repo-skills-config-"));
 
@@ -89,6 +146,6 @@ describe("loadConfig", () => {
     const file = join(dir, "ok.json");
     writeFileSync(file, JSON.stringify({ skills: { a: { path: "/s/a", repos: ["*"] } } }));
     chmodSync(file, 0o444);
-    expect(loadConfig(file, home).skills).toEqual([{ name: "a", path: "/s/a", repos: ["*"] }]);
+    expect(loadConfig(file, home).skills).toEqual([{ name: "a", path: "/s/a", repos: ["*"], triggers: NO_TRIGGERS }]);
   });
 });

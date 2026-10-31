@@ -6,7 +6,10 @@
 let
   packages = self.packages.${pkgs.stdenv.hostPlatform.system};
   hmConfig =
-    skills:
+    {
+      skills,
+      semantic ? null,
+    }:
     home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
@@ -19,18 +22,22 @@ let
           };
           programs.pi-skills = {
             enable = true;
-            inherit skills;
+            inherit skills semantic;
           };
         }
       ];
     };
   hm = hmConfig {
-    repo-scaffold.repos = [ "Patrick-Kappen/*" ];
-    # A skill from elsewhere, by path.
-    extra = {
-      path = ../test/nix/extra-skill;
-      repos = [ "*" ];
+    skills = {
+      repo-scaffold.repos = [ "Patrick-Kappen/*" ];
+      # A skill from elsewhere, by path, with triggers.
+      extra = {
+        path = ../test/nix/extra-skill;
+        repos = [ "*" ];
+        triggers.errors = [ "command not found" ];
+      };
     };
+    semantic.url = "http://localhost:8097";
   };
 in
 {
@@ -54,7 +61,9 @@ in
         test -f "$homeFiles/$agent/extensions/repo-skills/index.ts"
         test ! -e "$homeFiles/$agent/extensions/repo-skills/index.test.ts"
         jq -e --arg path "${packages.skills}/repo-scaffold" \
-          '.skills."repo-scaffold" == { path: $path, repos: ["Patrick-Kappen/*"] }' \
+          '.skills."repo-scaffold" == { path: $path, repos: ["Patrick-Kappen/*"], triggers: { paths: [], extensions: [], errors: [] } }' \
+          "$homeFiles/$agent/repo-skills.json"
+        jq -e '.skills.extra.triggers.errors == ["command not found"] and .semantic.url == "http://localhost:8097" and .semantic.load == 0.9' \
           "$homeFiles/$agent/repo-skills.json"
         test -f "$(jq -r '.skills."repo-scaffold".path' "$homeFiles/$agent/repo-skills.json")/SKILL.md"
         test -f "$(jq -r .skills.extra.path "$homeFiles/$agent/repo-skills.json")/SKILL.md"
@@ -66,6 +75,7 @@ in
   # A skill that is not in this flake and has no path fails the evaluation.
   home-manager-assertion =
     assert
-      !(builtins.tryEval (hmConfig { unknown.repos = [ "*" ]; }).activationPackage.drvPath).success;
+      !(builtins.tryEval (hmConfig { skills.unknown.repos = [ "*" ]; }).activationPackage.drvPath)
+      .success;
     pkgs.emptyFile;
 }
