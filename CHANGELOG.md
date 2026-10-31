@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.6.0...v0.7.0) (2026-10-31)
+
+
+### Features
+
+* **git:** document jj-backed pi-git workspaces ([#19](https://github.com/Patrick-Kappen/pi-skills/issues/19)) ([cef3c4d](https://github.com/Patrick-Kappen/pi-skills/commit/cef3c4d41d353c0b73736dd10a170228e238a207))
+* **test-speed:** skill to make test suites fast and keep new tests fast ([#20](https://github.com/Patrick-Kappen/pi-skills/issues/20)) ([904dfb7](https://github.com/Patrick-Kappen/pi-skills/commit/904dfb74e15245f0c1bb3ef74cf035f3b584cbdc))
+
 ## [0.6.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.5.0...v0.6.0) (2026-10-31)
 
 
