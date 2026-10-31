@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.2.0...v0.3.0) (2026-10-31)
+
+
+### Features
+
+* **repo-scaffold:** check and apply GitHub settings, with a main ruleset ([#11](https://github.com/Patrick-Kappen/pi-skills/issues/11)) ([2981e48](https://github.com/Patrick-Kappen/pi-skills/commit/2981e487a4c9b2187fb090f4988ce246f87cfe6d))
+* skill-create and skill-review skills, and a check for the skill rules ([#9](https://github.com/Patrick-Kappen/pi-skills/issues/9)) ([5090cc4](https://github.com/Patrick-Kappen/pi-skills/commit/5090cc4758ca17a837f2b1754d73a28a54b736fa))
+
 ## [0.2.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.1.0...v0.2.0) (2026-10-31)
 
 
