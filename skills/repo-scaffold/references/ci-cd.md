@@ -27,8 +27,14 @@
 
 - A PR opened with `GITHUB_TOKEN` (release-please, Dependabot updates) does not start CI on its own;
   GitHub shows "approval required".
-- The repository secret `RELEASE_PLEASE_TOKEN` fixes that: a fine-grained PAT with Contents and Pull
-  requests write on this repository. The workflow uses it when it is set.
+- The release App fixes that: a GitHub App of the owner with Contents and Pull requests write,
+  installed on the repositories, no webhook. Each repository has the variable
+  `RELEASE_APP_CLIENT_ID` and the secret `RELEASE_APP_PRIVATE_KEY`; the workflow then gets a
+  short-lived token from `actions/create-github-app-token`. Use an App only for releases, not one
+  that also does deploys or CI statuses: its key sits in every release repository.
+- The owner sets the secret, never the agent: the key must not pass through the agent. For example,
+  from the machine with the `.pem` file:
+  `gh secret set RELEASE_APP_PRIVATE_KEY -R <owner>/<repo> < <file>.pem`.
 
 ## Never
 

@@ -13,5 +13,5 @@ Skip this step if `github=no`.
 3. Watch the first CI run with `gh run watch -R <owner>/<name>`. If it fails, fix it on a branch with a
    PR; do not push to `main`.
 4. With `release=yes`, release-please opens a release PR (0.1.0) as soon as `main` has a `feat` or
-   `fix` commit. **Do not merge it**; the user decides when to release. Its CI shows "approval
-   required" until the user approves it or sets `RELEASE_PLEASE_TOKEN` (see `references/ci-cd.md`).
+   `fix` commit. **Do not merge it**; the user decides when to release. Without the release App
+   its CI does not run, and only the admin bypass can merge it (see `references/ci-cd.md`).

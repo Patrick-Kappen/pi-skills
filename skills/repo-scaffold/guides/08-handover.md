@@ -8,7 +8,8 @@ Report briefly, in the user's language:
 - the results: verify passed, CI run status, and the release PR number if there is one;
 - the user's open decisions:
   - merge the release PR when they want a release;
-  - set `RELEASE_PLEASE_TOKEN` if CI should run on bot PRs;
+  - install the release App on the new repository if it is not on all repositories; the
+    variable and secret are already checked by `github-settings.ts`;
   - for a work repository, check the GitHub account;
 - the templates of this skill you changed in step 5, if any.
 

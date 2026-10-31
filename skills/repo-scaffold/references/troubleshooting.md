@@ -8,7 +8,7 @@
 | `no-commit-to-branch` fails in CI on `main` | The hook also runs in `devenv test` | `SKIP: no-commit-to-branch` in the CI job (in the template) |
 | convco in CI: `could not find repository` | convco needs a git repository, also with `--from-stdin` | `cd "$(mktemp -d)" && git init -q` first (in the template) |
 | release-please proposes 1.0.0 | No previous release | `initial-version: 0.1.0` (in the template) |
-| Release PR CI: "approval required" | PR opened with `GITHUB_TOKEN` | Approve the run, or set `RELEASE_PLEASE_TOKEN` |
+| Release PR without CI | PR opened with `GITHUB_TOKEN`: no release App variable or secret, or the App is not installed | Set them (`references/ci-cd.md`), install the App, run the release workflow again |
 | biome: `No files were processed` in pre-commit | Only ignored files were staged | `--no-errors-on-unmatched` (in the template) |
 | Tests in hooks write into the repository's own index | `GIT_INDEX_FILE` and other `GIT_*` from git | `unset "${!GIT_@}"` in the hook script (in the template) |
 | `nix flake check` misses new files | Flakes only see files tracked by git | `git add` first |

@@ -22,6 +22,12 @@ GitHub, so check and apply stay the same.
   Secret scanning on private repositories needs GitHub Advanced Security, which GitHub Pro does not
   include; gitleaks in the hooks and CI covers them.
 
+## Release App
+
+Repositories with `release-please-config.json` need the variable `RELEASE_APP_CLIENT_ID` and the
+secret `RELEASE_APP_PRIVATE_KEY`, so release PRs are opened by the release App and get CI (see
+`references/ci-cd.md`). The script checks both, but never sets them.
+
 ## The `main` ruleset
 
 One ruleset named `main`, active on the default branch:
@@ -39,9 +45,10 @@ Rulesets on private repositories need GitHub Pro (or a paid organisation plan).
 
 ## Notes
 
-- Release PRs of release-please are opened with `GITHUB_TOKEN`, so their CI does not run until the
-  owner approves the run or sets `RELEASE_PLEASE_TOKEN` (`references/ci-cd.md`). Until then the
-  required checks are missing and only the admin bypass can merge them.
+- Release PRs are opened by the release App when the repository has the variable
+  `RELEASE_APP_CLIENT_ID` and the secret `RELEASE_APP_PRIVATE_KEY`; then their CI runs. Repositories
+  with `release-please-config.json` are checked for both (area `release`). Without them, release PRs
+  have no CI and only the admin bypass can merge them.
 - The `release.yml` workflow moves the `latest` branch; the ruleset covers only the default branch,
   so that keeps working.
 - A ruleset named `main` that already exists is replaced as a whole on apply.

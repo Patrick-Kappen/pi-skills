@@ -88,6 +88,7 @@ function fakeGitHub(visibility: "public" | "private", options: { ci?: boolean } 
       state.rulesets.push({ ...body, id: 7 });
       return "{}";
     },
+    "GET /contents/release-please-config.json": () => undefined,
     "GET /contents/.github/workflows/ci.yml": () => (options.ci ? Buffer.from(CI).toString("base64") : undefined),
   };
   const ruleset = (method: string, tail: string, body: Body): string | undefined => {
@@ -327,5 +328,34 @@ describe("main and the gh runner, in process", () => {
       process.env.PATH = path;
       rmSync(bin, { recursive: true, force: true });
     }
+  });
+});
+
+describe("the release App", () => {
+  const withRelease = (variable: boolean, secret: boolean): Gh => {
+    const github = fakeGitHub("private");
+    const answers: [string, string | undefined][] = [
+      ["/contents/release-please-config.json", "release-please-config.json"],
+      ["/actions/variables/RELEASE_APP_CLIENT_ID", variable ? "{}" : undefined],
+      ["/actions/secrets/RELEASE_APP_PRIVATE_KEY", secret ? "{}" : undefined],
+    ];
+    return (args, input) => {
+      const answer = answers.find(([suffix]) => (args[1] ?? "").endsWith(suffix));
+      return answer ? answer[1] : github.gh(args, input);
+    };
+  };
+
+  test("a release-please repository without the secret differs in the area release", () => {
+    const found = differences(readCurrent(withRelease(true, false), "o/a"), []).filter((d) => d.area === "release");
+    expect(found).toEqual([{ area: "release", setting: "RELEASE_APP_PRIVATE_KEY", want: "true", got: "false" }]);
+  });
+
+  test("with both set there is no release difference, and apply does not touch them", () => {
+    const gh = withRelease(true, true);
+    expect(differences(readCurrent(gh, "o/a"), []).some((d) => d.area === "release")).toBe(false);
+  });
+
+  test("repositories without release-please are not checked for it", () => {
+    expect(readCurrent(fakeGitHub("private").gh, "o/a").release).toBeUndefined();
   });
 });

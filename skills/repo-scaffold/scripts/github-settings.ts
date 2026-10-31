@@ -30,6 +30,8 @@ export interface Difference {
 
 export interface Current {
   repo: Record<string, unknown>;
+  /** Only for repositories with release-please-config.json: whether the release App is set up. */
+  release?: { clientId: boolean; privateKey: boolean } | undefined;
   workflow: Record<string, unknown>;
   vulnerabilityAlerts: boolean;
   automatedSecurityFixes: boolean;
@@ -182,6 +184,15 @@ export function differences(current: Current, checks: string[]): Difference[] {
     ...compare("actions", WORKFLOW_SETTINGS, current.workflow),
     ...compare("security", security, securityNow),
   ];
+  if (current.release) {
+    result.push(
+      ...compare(
+        "release",
+        { RELEASE_APP_CLIENT_ID: true, RELEASE_APP_PRIVATE_KEY: true },
+        { RELEASE_APP_CLIENT_ID: current.release.clientId, RELEASE_APP_PRIVATE_KEY: current.release.privateKey },
+      ),
+    );
+  }
   if (!current.ruleset) {
     result.push({ area: "ruleset", setting: RULESET_NAME, want: "protects the default branch", got: "(missing)" });
   } else {
@@ -211,7 +222,15 @@ export function readCurrent(gh: Gh, repo: string): Current {
   const ruleset = (Array.isArray(list) ? (list as { id: number; name: string }[]) : []).find(
     (entry) => entry.name === RULESET_NAME,
   );
+  const release =
+    gh(["api", `repos/${repo}/contents/release-please-config.json`, "--jq", ".path"]) === undefined
+      ? undefined
+      : {
+          clientId: gh(["api", `repos/${repo}/actions/variables/RELEASE_APP_CLIENT_ID`]) !== undefined,
+          privateKey: gh(["api", `repos/${repo}/actions/secrets/RELEASE_APP_PRIVATE_KEY`]) !== undefined,
+        };
   return {
+    release,
     repo: json(gh(["api", `repos/${repo}`]), {}),
     workflow: json(gh(["api", `repos/${repo}/actions/permissions/workflow`]), {}),
     vulnerabilityAlerts: gh(["api", `repos/${repo}/vulnerability-alerts`]) !== undefined,
@@ -255,6 +274,7 @@ export function apply(gh: Gh, repo: string, current: Current, checks: string[]):
       );
     }
   }
+  // The release App variable and secret are not applied: the key must come from the owner.
   if (areas.has("ruleset")) {
     const body = JSON.stringify(desiredRuleset(checks));
     const id = current.ruleset?.id;

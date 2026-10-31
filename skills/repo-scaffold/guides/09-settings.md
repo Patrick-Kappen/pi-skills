@@ -15,6 +15,9 @@ reasons are in `references/github-settings.md`.
      because they have no `.github/workflows/ci.yml` with job names. Propose `--checks "<job name>"`
      if they have CI under another file, or leave it;
    - a ruleset called `main` that already exists but differs: applying replaces its rules;
+   - differences in the area `release` (the release App's variable or secret): `--apply` does not
+     set those. The variable is the App's Client ID; the secret is the App's private key, which the
+     user sets from the machine that has it (`references/ci-cd.md`). Never ask for the key in chat;
    - repositories where the user may want an exception (a profile repository, a scratch repository).
 3. **Ask** which repositories to change. This is visible on GitHub; wait for an explicit yes with the
    list of repositories.
@@ -23,5 +26,5 @@ reasons are in `references/github-settings.md`.
    It re-reads the settings afterwards and prints what still differs. Investigate anything left
    (missing admin rights, a feature the plan does not include) instead of retrying blindly.
 5. **Hand over**: what changed, what was left as it is and why, and the notes of
-   `references/github-settings.md` that matter (release PRs need an admin merge while their CI does
-   not run).
+   `references/github-settings.md` that matter (without the release App, release PRs have no CI
+   and need an admin merge).
