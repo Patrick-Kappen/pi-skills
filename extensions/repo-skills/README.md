@@ -1,6 +1,6 @@
 # repo-skills
 
-A pi extension that loads skills only in the repositories you list. Nothing goes into the
+A pi extension that loads skills everywhere, or only in the repositories you list. Nothing goes into the
 repositories themselves, and the skills do not live in `~/.pi/agent/skills`, which pi would load
 everywhere.
 
@@ -36,7 +36,8 @@ or hits an error the skill covers. See [Triggers](#triggers).
 }
 ```
 
-`path` is the directory with the skill's `SKILL.md`: an absolute path or `~/...`.
+`path` is the directory with the skill's `SKILL.md`: an absolute path or `~/...`. Without `repos`, the
+skill loads everywhere.
 
 ### `triggers`
 
@@ -70,7 +71,7 @@ or hits an error the skill covers. See [Triggers](#triggers).
 | `owner/*`, `*/repo-*` | `*` matches within one path segment. |
 | `/abs/path`, `~/path` | That directory and everything below it. A worktree elsewhere matches through the location of its main checkout. Also works outside git. |
 
-A skill without `path` or `repos`, or without a `SKILL.md`, is reported as a warning when the
+A skill without `path`, with an empty or invalid `repos`, or without a `SKILL.md`, is reported as a warning when the
 session starts. The other skills still load.
 
 ### Locations

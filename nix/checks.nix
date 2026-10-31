@@ -30,6 +30,8 @@ let
   hm = hmConfig {
     skills = {
       repo-scaffold.repos = [ "Patrick-Kappen/*" ];
+      # The other skills of this flake load everywhere by default; this one is turned off.
+      skill-review.enable = false;
       # A skill from elsewhere, by path, with triggers.
       extra = {
         path = ../test/nix/extra-skill;
@@ -62,6 +64,8 @@ in
         test ! -e "$homeFiles/$agent/extensions/repo-skills/index.test.ts"
         jq -e --arg path "${packages.skills}/repo-scaffold" \
           '.skills."repo-scaffold" == { path: $path, repos: ["Patrick-Kappen/*"], triggers: { paths: [], extensions: [], errors: [] } }' \
+          "$homeFiles/$agent/repo-skills.json"
+        jq -e '.skills.git.repos == ["*"] and (.skills | has("test-speed")) and (.skills | has("skill-review") | not)' \
           "$homeFiles/$agent/repo-skills.json"
         jq -e '.skills.extra.triggers.errors == ["command not found"] and .semantic.url == "http://localhost:8097" and .semantic.load == 0.9' \
           "$homeFiles/$agent/repo-skills.json"

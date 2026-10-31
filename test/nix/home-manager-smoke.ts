@@ -41,14 +41,18 @@ function skillsIn(cwd: string): string[] {
   return result.skillPaths.map((path) => basename(path).replace(/^[0-9a-z]{32}-/, "")).sort();
 }
 
-const cases: Array<[string, string[]]> = [
-  ["git@github.com:Patrick-Kappen/nixos-config.git", ["extra-skill", "repo-scaffold"]],
-  ["https://github.com/someone/else", ["extra-skill"]],
+// Every skill of the flake loads everywhere by default; repo-scaffold only in Patrick-Kappen/*, and
+// skill-review is turned off.
+const cases: Array<[string, { has: string[]; not: string[] }]> = [
+  [
+    "git@github.com:Patrick-Kappen/nixos-config.git",
+    { has: ["extra-skill", "git", "repo-scaffold"], not: ["skill-review"] },
+  ],
+  ["https://github.com/someone/else", { has: ["extra-skill", "git"], not: ["repo-scaffold", "skill-review"] }],
 ];
-for (const [remote, expected] of cases) {
+for (const [remote, { has, not }] of cases) {
   const actual = skillsIn(repo(remote));
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error(`${remote}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-  }
+  const wrong = [...has.filter((name) => !actual.includes(name)), ...not.filter((name) => actual.includes(name))];
+  if (wrong.length > 0) throw new Error(`${remote}: got ${JSON.stringify(actual)}; wrong: ${wrong.join(", ")}`);
   process.stdout.write(`ok ${remote}: ${JSON.stringify(actual)}\n`);
 }
