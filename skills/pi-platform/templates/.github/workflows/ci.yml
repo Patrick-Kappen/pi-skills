@@ -1,0 +1,54 @@
+name: platform-ci
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: ["@DEFAULT_BRANCH@"]
+permissions:
+  contents: read
+jobs:
+  trusted-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@PIN:actions/checkout@
+        with:
+          persist-credentials: false
+      - uses: DeterminateSystems/nix-installer-action@PIN:DeterminateSystems/nix-installer-action@
+      - uses: actions/setup-node@PIN:actions/setup-node@
+        with:
+          node-version: 24
+      - name: Run policy checker from trusted base
+        env:
+          DEFAULT_BRANCH: "@DEFAULT_BRANCH@"
+        run: |
+          git fetch --no-tags origin "$DEFAULT_BRANCH"
+          trusted_base=$(git rev-parse FETCH_HEAD)
+          trusted=$(mktemp -d)
+          git archive "$trusted_base" scripts/platform | tar -x -C "$trusted"
+          node "$trusted/scripts/platform/check-policy.ts" --repo . --base "$trusted_base"
+  platform-checks:
+    if: always()
+    needs: [trusted-policy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@PIN:actions/checkout@
+        with:
+          persist-credentials: false
+      - uses: DeterminateSystems/nix-installer-action@PIN:DeterminateSystems/nix-installer-action@
+      - uses: cachix/cachix-action@PIN:cachix/cachix-action@
+        with:
+          name: devenv
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+      - run: devenv shell -- just check
+  required:
+    if: always()
+    needs: [trusted-policy, platform-checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail on any failed, skipped, or cancelled required job
+        env:
+          POLICY_RESULT: ${{ needs.trusted-policy.result }}
+          CHECK_RESULT: ${{ needs.platform-checks.result }}
+        run: |
+          test "$POLICY_RESULT" = success && test "$CHECK_RESULT" = success

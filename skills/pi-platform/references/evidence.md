@@ -1,0 +1,27 @@
+# Evidence and implementation boundary
+
+This skill provides workflow automation and starter artifacts. It is not the completed Pi platform.
+Use this matrix to distinguish executable evidence from architecture proposals and owner-controlled
+integration. “Tested” describes the evidence actually run in this repository; it does not imply a
+production migration or trusted remote enforcement.
+
+| Requirement | Guide / implementation | Evidence | Status |
+|---|---|---|---|
+| Research existing behavior before planning | `guides/01-discover.md`, `guides/02-plan.md`; `scripts/inventory.ts` | `test/skills/pi-platform/policy.test.ts`; the read-only trial is summarized in the coordination report, not a full migration trial | Implemented and tested for inventory/planning; source interpretation remains manual |
+| Select changed components and reverse dependants safely | `scripts/plan-change.ts` | policy tests cover component, shared, docs-only, rename/delete, invalid/missing manifests and NUL-separated Git paths | Implemented and tested; malformed/unknown scope fails closed |
+| Enforce policy floors, dependency allowlists and trusted-base comparisons | `scripts/check-policy.ts` | policy tests cover missing candidate policy, weakened policy, changed check/scanner configuration and invalid component/check manifests | Implemented and tested as a structural gate; parser-aware import boundaries are delegated to generated dependency-cruiser |
+| Run required checks as a bounded DAG | `scripts/run-checks.ts`, `templates/platform-checks.json` | `test/skills/pi-platform/jobs.test.ts` exercises failure, timeout, dependency blocking, dry-run and concurrency | Implemented and tested; `--only` is for development, never a full-CI success substitute |
+| Supervise Linux background tasks and preserve task/delivery outcomes | `scripts/jobs.ts`, `references/jobs.md` | `test/skills/pi-platform/jobs.test.ts` covers readiness, task result, notifier failure, cancellation, stale/reused identity and CLI validation | Implemented and tested on Linux; a notifier is not an agent-resume callback unless the user supplies and verifies one |
+| Create public/private starter overlays without replacing existing files | `scripts/scaffold.ts`, templates | `test/skills/pi-platform/scaffold.test.ts` instantiates a disposable linked worktree, runs generated `just typecheck`, `just test`, `just coverage`, Biome, actionlint, Nix parse/format checks, and evaluates the generated module composition | Implemented and tested for this representative smoke; dependency bootstrap and every generated quality gate are not all exercised in this smoke |
+| Keep generated Home Manager option namespace consistent with the target design | `templates/home-manager/module.nix`, `home-manager/examples/legacy-pi-rules.nix`, `templates/flake.nix` | Scaffold smoke checks and evaluates the generated module example under `programs.pi` | Namespace and minimal JSON composition implemented/tested; not a production Home Manager scope API |
+| Produce a Home Manager integration recommendation | `scripts/home-manager-plan.ts`, `references/home-manager.md` | policy tests include `packages/agents/pi/`, `flake-file.inputs` and `flake.modules.homeManager` fixtures | Advisory discovery only; owner must inspect the real module/import tree and generated-flake workflow |
+| Propose per-component releases | `scripts/release-plan.ts`, `references/releases.md` | policy tests cover path ownership, Conventional Commit/breaking evidence, uncommitted changes and removed components | Proposal only; release metadata, compatibility propagation and human review remain owner-controlled |
+| Enforce CI independently of candidate changes | `templates/.github/workflows/ci.yml`, `templates/docs/ci-trust.md`, `references/enforcement.md` | Workflow is syntax/lint checked and includes a trusted-base checker plus an always-run aggregate | Template only. It remains candidate-editable; a protected external required check and branch ruleset are missing until an administrator configures them |
+| Resolve global/group/folder/repository/file scopes and explain effective settings | `references/architecture.md`, `references/configuration.md` | Design and acceptance cases are documented | **Missing runtime implementation.** The generated module currently composes a read-only catalog JSON only; free-form scope resolution, validation, precedence, provenance and runtime adapters are not implemented |
+| Migrate or deploy existing platform consumers | `guides/06-deliver.md`, `references/home-manager.md` | No production platform repository or consumer was modified in this task | **Not performed.** Separate owner-approved worktree/PRs, source compatibility evidence, consumer evaluation and deployment approval are required |
+| Selectively run only affected tests | `templates/justfile` | `just test-changed` prints the component/reverse-dependency plan, then runs the full test and coverage gates | Conservative full-suite superset; per-component test mapping is **missing** and is not claimed as selective execution |
+
+The skill repository's passing `devenv shell -- check` proves its repository gates, not that every
+future generated repository, branch-protection rule, Home Manager consumer, or runtime scope behavior
+is correct. Review generated artifacts and run the target repository's full locked-toolchain checks
+before adoption. Never describe a target-design row as an implemented platform feature.

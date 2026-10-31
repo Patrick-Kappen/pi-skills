@@ -16,6 +16,7 @@ everywhere by default, or only in the repositories you list. It works like `repo
 | [`skill-review`](skills/skill-review/SKILL.md) | Improves a skill from evidence: finds the sessions that used it, lets a cheap model (`gpt-6-luna`) analyse them, and turns the report into approved changes and a PR. Lessons that hold beyond the skill go into a learnings log, then into the skill rules of `skill-create` (from a second skill on), or into [pi-rules](https://github.com/Patrick-Kappen/pi-rules). Prompt: `/skill-review`. |
 | [`test-speed`](skills/test-speed/SKILL.md) | Makes the tests of a repository fast and keeps new ones fast: times every test file, finds repeated process starts, adds a parallel runner, a `test-changed` run from the git diff, and the recipes `just test`, `just test-changed` and `just test-serial` on top of devenv. Scripts for timing, comparing and setup; templates for Pester. Prompt: `/test-speed`. |
 | [`nixos`](skills/nixos/SKILL.md) | Fixes "command not found", missing libraries and headers, binaries that will not start and pip errors the NixOS way: finds the package with `nix-locate` (script), runs it once with `nix shell`, or adds it to the repository's devenv. Best loaded by error triggers (see below). |
+| [`pi-platform`](skills/pi-platform/SKILL.md) | Builds, migrates and extends the modular Pi platform: public/private monorepos, scoped Home Manager configuration, scripted parallel checks, component releases and durable job handoffs. Prompt: `/pi-platform`. |
 
 ## Use with Home Manager
 

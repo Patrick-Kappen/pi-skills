@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "packages/*/src/index.ts",
+    "scripts/platform/*.ts",
+    "scripts/platform/policy-hook.mjs",
+    "test/**/*.test.ts"
+  ],
+  "project": ["packages/**/*.ts", "scripts/platform/**/*.ts", "scripts/platform/**/*.mjs", "test/**/*.ts"],
+  "ignore": ["**/*.test.ts"]
+}
