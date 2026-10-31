@@ -1,7 +1,9 @@
 # The description
 
 pi puts every skill's `name` and `description` in the system prompt. The model decides from the
-description alone whether to read the skill, so it is the most important line of the skill.
+description alone whether to read the skill, so it is the most important line of the skill. The
+repo-skills extension scores each prompt against the descriptions too, and loads the skill by itself
+on a high score; a description without the user's words and the `Use when` triggers scores low.
 
 ## Shape
 

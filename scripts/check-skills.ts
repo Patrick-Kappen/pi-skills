@@ -185,6 +185,25 @@ function checkFiles(skill: string, dir: string, problems: Problem[]): void {
   }
 }
 
+/**
+ * Every script (not a `lib*` library) must be named in SKILL.md: the agent often sees only SKILL.md,
+ * and the repo-skills extension puts only SKILL.md and the matching parts into the prompt.
+ */
+function checkScriptsNamed(skill: string, dir: string, body: string, problems: Problem[]): void {
+  const scripts = join(dir, "scripts");
+  if (!existsSync(scripts)) return;
+  for (const entry of readdirSync(scripts, { withFileTypes: true })) {
+    if (!entry.isFile() || entry.name.startsWith("lib") || entry.name.endsWith(".md")) continue;
+    if (!body.includes(entry.name)) {
+      problems.push({
+        skill,
+        file: "SKILL.md",
+        message: `does not name scripts/${entry.name}; say in SKILL.md what each script does and when to run it`,
+      });
+    }
+  }
+}
+
 /** All problems of one skill directory. */
 export function checkSkill(dir: string): Problem[] {
   const skill = basename(dir);
@@ -203,6 +222,7 @@ export function checkSkill(dir: string): Problem[] {
       message: `has ${lines} lines; keep it under ${MAX_SKILL_LINES} and move details to references/`,
     });
   }
+  checkScriptsNamed(skill, dir, fm.body, problems);
   checkFiles(skill, dir, problems);
   return problems;
 }
