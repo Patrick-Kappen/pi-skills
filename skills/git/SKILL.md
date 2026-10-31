@@ -2,7 +2,7 @@
 name: git
 description: How to work with git and GitHub - worktrees, branches, commits, pushes, pull requests, CI, conflicts, stacked PRs, rebasing after squash merges, and cleanup after a merge. Use for every git or GitHub task - starting a change, committing, pushing, opening or updating a PR, fixing CI or a conflict, and cleaning up.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # git
@@ -59,6 +59,9 @@ change and get a short result back. Details: `references/pi-git.md`.
 - **A locked step is not an error to work around.** Finish what you may, then call `git_request`
   with what you need and why, and stop. The user unlocks with `/git unlock <step>`, or runs the step
   once with `/git <step>`.
+- **A jj workspace** (`git_start` says "History: jj"): edit files, do not commit yourself; every turn
+  becomes a `wip:` commit, and `git_commit` or `git_pr` turns them into logical commits. See
+  `references/pi-git.md`.
 - Without `git_start`, starting the worktree is still your job (`references/worktrees.md`).
 
 ## Workflow

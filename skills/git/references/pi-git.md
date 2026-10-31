@@ -44,6 +44,21 @@ The watcher follows the PR every minute:
 The summaries reach you as a message. Act only when one asks for something; otherwise there is
 nothing to do. Do not watch CI or poll the PR yourself.
 
+## jj workspaces
+
+git is the default backend. In a repository whose backend is jj (the user's choice: `/git backend
+jj`, or the config), `git_start` makes a colocated jj workspace and its result says "History: jj".
+It is a git worktree too, with the branch as a jj bookmark and a detached HEAD.
+
+- **Edit files and do not commit.** No `jj commit`, `jj describe`, `jj squash`, `jj new` or `git
+  commit`: at the end of every turn pi-git makes one `wip:` commit of what you changed.
+- **`git_commit` and `git_pr`** gather the `wip:` commits, run the hooks, and let the helper split the
+  work into logical commits. A `title` is used as is only for work of one turn; for work of several
+  turns it is a hint, because it describes your last turn only.
+- **Reading with jj is fine** (`jj log`, `jj diff`, `jj st`). `jj undo` or `jj restore` go back to an
+  earlier turn when the user asks for it.
+- The watcher rebases jj workspaces and resolves conflicts with the helper, as for git worktrees.
+
 ## The lock
 
 Four steps, each locked or unlocked per repository: `worktree`, `commit`, `push`, `pr`. Reading is
