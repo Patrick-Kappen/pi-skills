@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.7.0...v0.8.0) (2026-10-31)
+
+
+### Features
+
+* **skill-create:** skills name their scripts and tools in SKILL.md ([#23](https://github.com/Patrick-Kappen/pi-skills/issues/23)) ([38f7b6e](https://github.com/Patrick-Kappen/pi-skills/commit/38f7b6e04e690c237bbb4cfb501d8abdcc0e1e8e))
+
 ## [0.7.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.6.0...v0.7.0) (2026-10-31)
 
 
