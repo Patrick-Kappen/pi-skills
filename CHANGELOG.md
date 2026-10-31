@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.3.0...v0.4.0) (2026-10-31)
+
+
+### Features
+
+* **git:** use the pi-git tools without watching CI, and change several repositories at once ([#13](https://github.com/Patrick-Kappen/pi-skills/issues/13)) ([9035563](https://github.com/Patrick-Kappen/pi-skills/commit/90355633ba10ab34b0675e86f04f74fed47f4880))
+
 ## [0.3.0](https://github.com/Patrick-Kappen/pi-skills/compare/v0.2.0...v0.3.0) (2026-10-31)
 
 
