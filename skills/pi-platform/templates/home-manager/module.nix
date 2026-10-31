@@ -1,9 +1,9 @@
 { config, lib, ... }:
 let
-  cfg = config.programs.piPlatform;
+  cfg = config.programs.pi;
 in
 {
-  options.programs.piPlatform = {
+  options.programs.pi = {
     catalog = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = { };
@@ -15,5 +15,5 @@ in
       description = "Deterministic JSON composition consumed by user-managed configuration.";
     };
   };
-  config.programs.piPlatform.stateJson = builtins.toJSON cfg.catalog;
+  config.programs.pi.stateJson = builtins.toJSON cfg.catalog;
 }

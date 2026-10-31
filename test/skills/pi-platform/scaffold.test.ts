@@ -105,7 +105,10 @@ function assertTemplateFiles(files: RenderedFiles): void {
   expect(files.get(".dependency-cruiser.cjs")).toContain("(?!widget/|core/)");
   expect(files.get("docs/platform-contract.md")).toContain("release-please");
   expect(files.get("docs/ci-trust.md")).toContain("candidate-editable");
-  expect(files.get("home-manager/examples/legacy-pi-rules.nix")).toContain('catalog."pi-rules"');
+  expect(files.get("home-manager/examples/legacy-pi-rules.nix")).toContain('programs.pi.catalog."pi-rules"');
+  expect(files.get("home-manager/module.nix")).toContain("options.programs.pi = {");
+  expect(files.get("home-manager/module.nix")).not.toContain("piPlatform");
+  expect(files.get("flake.nix")).toContain("programs.pi.catalog");
   expect(files.get("flake.nix")).toContain("legacy-pi-rules.nix");
   expect(files.get("scripts/platform/policy-hook.mjs")).toContain("process.exitCode = 2");
   expect(files.get("devenv.nix")).toContain('check.exec = "just check";');
@@ -279,7 +282,7 @@ describe("platform overlay scaffold", () => {
           "--impure",
           "--json",
           "--expr",
-          'let module = import ./home-manager/module.nix; lib = { mkOption = value: value; types = { attrsOf = _: {}; str = {}; }; }; config.programs.piPlatform.catalog = { core = "packages/core"; }; evaluated = module { inherit config lib; }; in evaluated.config.programs.piPlatform.stateJson',
+          'let module = import ./home-manager/module.nix; lib = { mkOption = value: value; types = { attrsOf = _: {}; str = {}; }; }; config.programs.pi.catalog = { core = "packages/core"; }; evaluated = module { inherit config lib; }; in evaluated.config.programs.pi.stateJson',
         ],
         { cwd: target, encoding: "utf8" },
       ),

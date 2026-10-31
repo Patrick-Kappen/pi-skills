@@ -3,7 +3,7 @@ name: pi-platform
 description: Build, migrate and extend the modular Pi platform: public and private monorepos, shared infrastructure, scoped Home Manager configuration, parallel scripted checks, component releases and observable background workflows. Research the existing contracts first and enforce the platform rules in CI. Run only on request via /pi-platform.
 disable-model-invocation: true
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # pi-platform
@@ -108,3 +108,4 @@ their provenance, not imported at runtime from an unstable skill-store path.
 | `references/home-manager.md` | Exporting/importing a module or changing the NixOS consumer |
 | `references/jobs.md` | Parallel work, detached Pi sessions, notifications and recovery |
 | `references/scripts.md` | Script inputs, outputs, recipes and failure diagnosis |
+| `references/evidence.md` | What is implemented/tested, advisory or manual, and still missing |

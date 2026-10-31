@@ -24,7 +24,7 @@
             home.username = "platform-check";
             home.homeDirectory = "/tmp/platform-check";
             home.stateVersion = "24.11";
-            programs.piPlatform.catalog = {
+            programs.pi.catalog = {
               core = "packages/core";
             };
           }

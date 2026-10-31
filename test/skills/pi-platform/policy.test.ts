@@ -71,6 +71,7 @@ function platform(root: string): void {
     "platform-checks.json",
     JSON.stringify({ schemaVersion: 1, checks: [{ id: "test", argv: ["npm", "test"] }] }),
   );
+  put(root, "biome.json", JSON.stringify({ linter: { enabled: true } }));
   for (const id of ["core", "app"])
     put(
       root,
@@ -242,11 +243,7 @@ describe("platform policy scripts", () => {
     platform(root);
     const base = commit(root, "feat: baseline");
     expect(checkPolicy(root, base)).toMatchObject({ ok: true, issues: [] });
-    put(
-      root,
-      "platform-checks.json",
-      JSON.stringify({ schemaVersion: 1, checks: [{ id: "check", argv: ["node", "-v"] }] }),
-    );
+    put(root, "biome.json", JSON.stringify({ linter: { enabled: false } }));
     expect(checkPolicy(root, base).issues.map((issue) => issue.code)).toContain("protected-enforcement-change");
     put(root, "platform-policy.json", JSON.stringify({ ...policy, coverage: { ...policy.coverage, branches: 89 } }));
     expect(checkPolicy(root, base).issues.map((issue) => issue.code)).toContain("coverage-floor");

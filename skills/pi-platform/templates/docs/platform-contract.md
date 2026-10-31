@@ -17,5 +17,7 @@ test-changed` prints the changed-component/reverse-dependency plan, then runs bo
 as a conservative superset until per-component test selection is available. Full CI never accepts a
 subset run. Releases are proposals managed by release-please; humans review and merge the release PR.
 
-The Home Manager module exposes a read-only catalog and deterministic JSON composition. Runtime
-scope resolution, activation, mutable state, and service management are intentionally not implemented.
+The starter Home Manager module uses the target `programs.pi` namespace and exposes only a
+read-only catalog plus deterministic JSON composition. It is not the future validated scope API.
+Runtime scope resolution, profiles/groups/folder/repository/file precedence, activation, mutable
+state, provenance explanations, and service management are intentionally not implemented.
